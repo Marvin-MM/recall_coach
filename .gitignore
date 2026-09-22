@@ -53,3 +53,6 @@ next-env.d.ts
 
 # local tooling
 .claude/settings.local.json
+
+# evidence text exports (real memory text; never commit without written consent)
+/docs/evidence/export-*/text-*.json
