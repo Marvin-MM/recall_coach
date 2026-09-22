@@ -111,6 +111,33 @@ describe("createMemWalPort failure mapping", () => {
     );
   });
 
+  it("treats an all-dropped recall (download/decrypt failures) as unavailable, not empty", async () => {
+    const port = createMemWalPort(
+      { ...base, recall: async () => ({ results: [], total: 0, dropped_count: 9 }) },
+      cfg,
+    );
+    await expect(port.recall({ namespace: "n", query: "q", limit: 5 })).rejects.toBeInstanceOf(
+      MemoryUnavailableError,
+    );
+  });
+
+  it("returns partial results when only some matches were dropped", async () => {
+    const port = createMemWalPort(
+      {
+        ...base,
+        recall: async () => ({
+          results: [{ blob_id: "b1", text: "kept", distance: 0.3 }],
+          total: 1,
+          dropped_count: 2,
+        }),
+      },
+      cfg,
+    );
+    expect(
+      (await port.recall({ namespace: "n", query: "q", limit: 5 })).map((m) => m.blobId),
+    ).toEqual(["b1"]);
+  });
+
   it("maps 401 to MemoryAuthError", async () => {
     const port = createMemWalPort(
       {

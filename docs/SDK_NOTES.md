@@ -97,3 +97,7 @@ Consequences in our code:
 4. **`MemoryPort.rememberMany` takes an `onAccepted` hook and the port has `jobStatuses()`** — needed to write `pending` rows after acceptance but before completion (spec §8.8 step 4) and to reconcile slow Mainnet saves.
 5. **Timeouts** — see measurements above.
 6. **AI Elements** — `ai-elements@latest` has no `--help`; running it installs *all* components. We kept `conversation`, `message` (its `MessageResponse` replaces the old `response` component), `prompt-input`, `suggestion`, `shimmer` (replaces `loader`), and removed the heavy streamdown plugins (mermaid, math, cjk, code).
+
+## Bug-hunt cross-reference
+
+Everything above that behaves unexpectedly was probed and written up in [`bug-hunt/FINDINGS.md`](../bug-hunt/FINDINGS.md): all-dropped recalls (report 001), transient upstream 429 job failures (002), `withMemWal` auto-save on serverless (003), `waitForRememberJobs` namespace echo (004), intermittent `analyze` 500s (005), nonexistent `accountId` → 502 (006), docs discrepancies (007, 008, [`docs-diff.md`](../bug-hunt/docs-diff.md)) and the unenforceable `minSupportedSdk` (009).

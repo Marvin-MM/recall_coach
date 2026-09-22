@@ -11,7 +11,7 @@ import type {
 } from "@mysten-incubation/memwal";
 import { MemWal } from "@mysten-incubation/memwal";
 import { coachLimits } from "@/config/coach";
-import { MemoryTimeoutError } from "@/lib/errors";
+import { MemoryTimeoutError, MemoryUnavailableError } from "@/lib/errors";
 import { log, logOnce } from "@/lib/log";
 import { withTimeout } from "@/lib/timeout";
 import type { AcceptedMemoryJob, RecalledMemory, RememberOutcome } from "@/types/memory";
@@ -139,6 +139,19 @@ export function createMemWalPort(client: MemWalLike, config: MemWalAdapterConfig
             makeError: timeoutError,
           },
         );
+        // The relayer silently omits matches whose blob download or SEAL
+        // decrypt failed (`dropped_count`, observed dropping 100% under light
+        // load). An all-dropped recall is NOT "no memories" — surface it as
+        // unavailable so chat degrades honestly instead of acting amnesiac.
+        const dropped = result.dropped_count ?? 0;
+        if (dropped > 0) {
+          log.warn("memory.recall_dropped", { dropped, returned: result.results.length });
+          if (result.results.length === 0) {
+            throw new MemoryUnavailableError(
+              `recall dropped all ${dropped} matches (blob download/decrypt failed)`,
+            );
+          }
+        }
         return result.results.map(toRecalled);
       } catch (raw) {
         return fail(raw, "memwal.recall");
