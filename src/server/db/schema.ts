@@ -12,6 +12,14 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import {
+  COACHING_MODES,
+  type CoachingMode,
+  MEMORY_KINDS,
+  MEMORY_STATUSES,
+  type MemoryKind,
+  type MemoryStatus,
+} from "@/types/domain";
 import { user } from "./auth-schema";
 
 export * from "./auth-schema";
@@ -21,20 +29,6 @@ export * from "./auth-schema";
  * METADATA only (job/blob ids, kinds, status, timings). Memory text and
  * conversation transcripts never land here — they live on Walrus.
  */
-
-export const COACHING_MODES = ["mock_interview", "drill", "review", "free_chat"] as const;
-export const MEMORY_KINDS = [
-  "profile",
-  "target_role",
-  "interview_date",
-  "learning_style",
-  "mistake",
-  "strength",
-  "improvement",
-  "goal",
-  "preference",
-] as const;
-export const MEMORY_STATUSES = ["pending", "done", "failed"] as const;
 
 export const coachingMode = pgEnum("coaching_mode", COACHING_MODES);
 export const memoryKind = pgEnum("memory_kind", MEMORY_KINDS);
@@ -132,9 +126,7 @@ export const recallEvents = pgTable(
   (t) => [index("recall_events_user_created_idx").on(t.userId, t.createdAt.desc())],
 );
 
-export type CoachingMode = (typeof COACHING_MODES)[number];
-export type MemoryKind = (typeof MEMORY_KINDS)[number];
-export type MemoryStatus = (typeof MEMORY_STATUSES)[number];
+export type { CoachingMode, MemoryKind, MemoryStatus };
 export type UserSettingsRow = typeof userSettings.$inferSelect;
 export type CoachingSessionRow = typeof coachingSessions.$inferSelect;
 export type MemoryEventRow = typeof memoryEvents.$inferSelect;

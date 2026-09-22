@@ -17,7 +17,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "auth:generate": "pnpm dlx auth@1.7.5 generate --config src/server/auth/auth.ts --output src/server/db/auth-schema.ts -y",
+    "auth:generate": "pnpm dlx auth@1.7.5 generate --config scripts/auth-cli.config.ts --adapter drizzle --dialect postgresql --output src/server/db/auth-schema.ts -y && biome check --write src/server/db/auth-schema.ts",
     "memwal:verify": "tsx --conditions=react-server scripts/memwal-verify.ts",
     "memwal:stats": "tsx --conditions=react-server scripts/memwal-stats.ts",
     "evidence:export": "tsx --conditions=react-server scripts/evidence-export.ts",
