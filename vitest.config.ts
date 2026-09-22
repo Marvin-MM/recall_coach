@@ -29,8 +29,6 @@ export default defineConfig({
     },
     projects: [
       {
-        resolve: sharedResolve,
-        plugins: [react()],
         test: {
           name: "unit",
           include: ["tests/unit/**/*.test.{ts,tsx}"],
@@ -40,7 +38,6 @@ export default defineConfig({
         },
       },
       {
-        resolve: sharedResolve,
         test: {
           name: "integration",
           include: ["tests/integration/**/*.test.ts"],

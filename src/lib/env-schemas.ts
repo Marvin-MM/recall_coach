@@ -127,7 +127,7 @@ export const serverSchema = {
 
   CRON_SECRET: z.string().min(16),
 
-  // Test-only switches. Rejected in production by `refineServerEnv`.
+  // Test-only switches. Rejected in production by `crossFieldProblems`.
   MEMORY_DRIVER: z.enum(["memwal", "fake"]).default("memwal"),
   LLM_DRIVER: z.enum(["groq", "fake"]).default("groq"),
   E2E_AUTH_SECRET: z.string().min(16).optional(),
