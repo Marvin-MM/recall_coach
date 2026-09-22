@@ -216,7 +216,7 @@ export function buildSystemPrompt(input: SystemPromptInput): string {
     );
   } else if (input.firstTurn) {
     policy.push(
-      "- Only the profile the user shared during setup is known — there are no past practice sessions yet. Do not say \"last session\" or \"last time\". Greet them, reference their target and focus areas in one sentence, and start.",
+      '- Only the profile the user shared during setup is known — there are no past practice sessions yet. Do not say "last session" or "last time". Greet them, reference their target and focus areas in one sentence, and start.',
     );
   }
   sections.push(policy.join("\n"));
