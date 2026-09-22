@@ -12,6 +12,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Enables forbidden()/unauthorized() for the admin evidence page.
+  experimental: { authInterrupts: true },
   // The MemWal SDK and its Mysten peers are server-only and ship ESM with
   // optional crypto paths; keep them out of the server bundle graph.
   serverExternalPackages: [

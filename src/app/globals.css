@@ -7,9 +7,15 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --color-link: var(--link);
+  --color-memory: var(--memory);
+  --color-memory-foreground: var(--memory-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-ink: var(--ink);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,83 +54,168 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Recall tokens. Light = "paper", dark = "deep sea". Values are hex so the
+ * contrast test (tests/unit/contrast.test.ts) can parse and verify every
+ * text/background pair against WCAG AA.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0rem;
+  --ink: #0b0f14;
+  --background: #f6f4ee;
+  --foreground: #0b0f14;
+  --card: #fbfaf6;
+  --card-foreground: #0b0f14;
+  --popover: #fbfaf6;
+  --popover-foreground: #0b0f14;
+  --primary: #4da2ff;
+  --primary-foreground: #0b0f14;
+  --secondary: #ece8dd;
+  --secondary-foreground: #0b0f14;
+  --muted: #ece8dd;
+  --muted-foreground: #5b6470;
+  --accent: #dcebff;
+  --accent-foreground: #0b0f14;
+  --destructive: #c4322b;
+  --border: #e2ded3;
+  --input: #8c8577;
+  --ring: #0a5bc4;
+  --link: #0a5bc4;
+  --memory: #97f0e5;
+  --memory-foreground: #0b0f14;
+  --warning: #fff1d6;
+  --warning-foreground: #6b4200;
+  --chart-1: #4da2ff;
+  --chart-2: #0a5bc4;
+  --chart-3: #97f0e5;
+  --chart-4: #5b6470;
+  --chart-5: #0b0f14;
+  --sidebar: #fbfaf6;
+  --sidebar-foreground: #0b0f14;
+  --sidebar-primary: #4da2ff;
+  --sidebar-primary-foreground: #0b0f14;
+  --sidebar-accent: #dcebff;
+  --sidebar-accent-foreground: #0b0f14;
+  --sidebar-border: #e2ded3;
+  --sidebar-ring: #0a5bc4;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #050b14;
+  --foreground: #e8eef5;
+  --card: #0b1522;
+  --card-foreground: #e8eef5;
+  --popover: #0b1522;
+  --popover-foreground: #e8eef5;
+  --primary: #4da2ff;
+  --primary-foreground: #0b0f14;
+  --secondary: #12263d;
+  --secondary-foreground: #e8eef5;
+  --muted: #0f1c2d;
+  --muted-foreground: #93a1b2;
+  --accent: #12263d;
+  --accent-foreground: #e8eef5;
+  --destructive: #ff6b62;
+  --border: #1c2a3b;
+  --input: #5a6b80;
+  --ring: #7cbcff;
+  --link: #7cbcff;
+  --memory: #97f0e5;
+  --memory-foreground: #0b0f14;
+  --warning: #2a2110;
+  --warning-foreground: #f5c56b;
+  --chart-1: #4da2ff;
+  --chart-2: #7cbcff;
+  --chart-3: #97f0e5;
+  --chart-4: #93a1b2;
+  --chart-5: #e8eef5;
+  --sidebar: #0b1522;
+  --sidebar-foreground: #e8eef5;
+  --sidebar-primary: #4da2ff;
+  --sidebar-primary-foreground: #0b0f14;
+  --sidebar-accent: #12263d;
+  --sidebar-accent-foreground: #e8eef5;
+  --sidebar-border: #1c2a3b;
+  --sidebar-ring: #7cbcff;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    -webkit-text-size-adjust: 100%;
   }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+  }
+  /* Paper grain: light mode only, very low opacity. */
+  :root:not(.dark) body {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.28 0 0 0 0 0.22 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  a {
+    text-underline-offset: 3px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+}
+
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  :root:not(.dark) body {
+    background-image: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --muted-foreground: #3f4650;
+    --border: #8c8577;
+  }
+  .dark {
+    --muted-foreground: #c3cdd9;
+    --border: #5a6b80;
+  }
+}
+
+/*
+ * One consistent, highly visible focus indicator (WCAG 2.4.7): 2px ring +
+ * 2px offset on every interactive element, including generated shadcn and
+ * AI Elements components that ship a 1px ring.
+ */
+:where(
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  summary,
+  [tabindex],
+  [role="button"],
+  [role="switch"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="tab"],
+  [role="menuitem"]
+):focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.font-tabular {
+  font-variant-numeric: tabular-nums;
 }

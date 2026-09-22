@@ -32,6 +32,7 @@ RELEVANT TO THIS MESSAGE:
 MEMORY POLICY:
 - Use these notes naturally and specifically (e.g. "Last Tuesday you forgot to discuss failure modes"). Use the dates given; do not invent dates.
 - Never invent memories, sessions, scores or details that are not in <coach_memory>.
+- Notes marked "from setup" come from the user's onboarding answers, not from a practice session — never describe them as "last session" or "last time".
 - If a past mistake did not recur in this answer, say so explicitly — that is progress."
 `;
 
@@ -66,6 +67,7 @@ RELEVANT TO THIS MESSAGE:
 MEMORY POLICY:
 - Use these notes naturally and specifically (e.g. "Last Tuesday you forgot to discuss failure modes"). Use the dates given; do not invent dates.
 - Never invent memories, sessions, scores or details that are not in <coach_memory>.
+- Notes marked "from setup" come from the user's onboarding answers, not from a practice session — never describe them as "last session" or "last time".
 - If a past mistake did not recur in this answer, say so explicitly — that is progress."
 `;
 
@@ -101,6 +103,7 @@ RELEVANT TO THIS MESSAGE:
 MEMORY POLICY:
 - Use these notes naturally and specifically (e.g. "Last Tuesday you forgot to discuss failure modes"). Use the dates given; do not invent dates.
 - Never invent memories, sessions, scores or details that are not in <coach_memory>.
+- Notes marked "from setup" come from the user's onboarding answers, not from a practice session — never describe them as "last session" or "last time".
 - If a past mistake did not recur in this answer, say so explicitly — that is progress."
 `;
 
@@ -131,5 +134,6 @@ RELEVANT TO THIS MESSAGE:
 MEMORY POLICY:
 - Use these notes naturally and specifically (e.g. "Last Tuesday you forgot to discuss failure modes"). Use the dates given; do not invent dates.
 - Never invent memories, sessions, scores or details that are not in <coach_memory>.
+- Notes marked "from setup" come from the user's onboarding answers, not from a practice session — never describe them as "last session" or "last time".
 - If a past mistake did not recur in this answer, say so explicitly — that is progress."
 `;

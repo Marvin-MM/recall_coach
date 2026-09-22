@@ -7,6 +7,7 @@ import { errorResponse, jsonOk } from "@/server/http/respond";
 import type { MemoryPort } from "@/server/memory/memory-port";
 import { deriveNamespaces } from "@/server/memory/namespace";
 import { selectLatestProfile } from "@/server/memory/profile";
+import { reconcilePendingJobs } from "@/server/memory/reconcile";
 import type { RateLimitPolicy } from "@/server/ratelimit";
 import type { MemoryInspectorDto } from "@/types/api";
 import type { MemoryKind } from "@/types/domain";
@@ -51,6 +52,12 @@ export function createMemoryInspectorHandler(deps: MemoryInspectorDeps) {
       if (cached) return jsonOk(cached);
 
       const settings = await deps.userSettings.get(user.id);
+      // Complete slow saves (e.g. onboarding jobs) so totals are current.
+      await reconcilePendingJobs({
+        memory: deps.memory(),
+        memoryEvents: deps.memoryEvents,
+        userId: user.id,
+      });
       const ns = deriveNamespaces(user.id, settings?.namespaceVersion ?? 1, deps.namespacePrefix);
       const memory = deps.memory();
       const queries = [

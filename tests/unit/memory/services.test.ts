@@ -43,6 +43,12 @@ function fakeRepo() {
         });
     }),
     markJobFailed: vi.fn(async () => {}),
+    replaceJob: vi.fn(async (oldId: string, newId: string) => {
+      const row = rows.get(oldId);
+      if (!row) return;
+      rows.delete(oldId);
+      rows.set(newId, { ...row, status: "pending" });
+    }),
     countDoneBlobsByUser: vi.fn(async () => 0),
     countJobsForSession: vi.fn(async () => ({ pending: 0, done: 0, failed: 0 })),
     countStalePending: vi.fn(async () => 0),
@@ -207,6 +213,57 @@ describe("storeMemories", () => {
     );
     expect(s).toMatchObject({ pending: 1, failed: 0, done: 0 });
     expect(rows.get("slow-job")?.status).toBe("pending");
+  });
+});
+
+describe("storeMemories transient job failures", () => {
+  it("resubmits jobs the relayer failed transiently and keeps one row per memory", async () => {
+    const { repo, rows } = fakeRepo();
+    const fake = createFakeMemory({ transientFailures: { "flaky line": 1 } });
+    const sleep = vi.fn(async (_ms: number) => {});
+    const s = await storeMemories(
+      { memory: fake, memoryEvents: repo, extract: vi.fn(), sleep },
+      {
+        userId: "u",
+        sessionId: null,
+        namespace: ns.facts,
+        items: [
+          { kind: "mistake", line: "flaky line" },
+          { kind: "goal", line: "stable line" },
+        ],
+      },
+    );
+    expect(s).toMatchObject({ accepted: 2, done: 2, failed: 0 });
+    expect(sleep).toHaveBeenCalledWith(500);
+    expect(repo.replaceJob).toHaveBeenCalledTimes(1);
+    expect([...rows.values()].map((r) => r.status)).toEqual(["done", "done"]);
+    expect(fake.calls.rememberMany[1]?.texts).toEqual(["flaky line"]);
+  });
+
+  it("gives up after two retries and records the failure", async () => {
+    const { repo, rows } = fakeRepo();
+    const fake = createFakeMemory({ transientFailures: { "always flaky": 5 } });
+    const s = await storeMemories(
+      {
+        memory: fake,
+        memoryEvents: repo,
+        extract: vi.fn(),
+        sleep: vi.fn(async (_ms: number) => {}),
+      },
+      {
+        userId: "u",
+        sessionId: null,
+        namespace: ns.facts,
+        items: [{ kind: "goal", line: "always flaky" }],
+      },
+    );
+    expect(s).toMatchObject({ done: 0, failed: 1 });
+    expect(fake.calls.rememberMany).toHaveLength(3);
+    expect([...rows.values()]).toHaveLength(1);
+    expect([...rows.values()][0]).toMatchObject({
+      status: "failed",
+      errorCode: "JOB_FAILED_TRANSIENT",
+    });
   });
 });
 

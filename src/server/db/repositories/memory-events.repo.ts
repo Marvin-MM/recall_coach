@@ -36,6 +36,8 @@ export interface MemoryEventsRepo {
   markJobsDone(jobs: readonly CompletedJob[]): Promise<{ done: number; duplicates: number }>;
   markJobsFailed(jobs: readonly FailedJob[]): Promise<void>;
   markJobFailed(job: FailedJob): Promise<void>;
+  /** Re-point a row to a resubmitted job (transient relayer failure retry). */
+  replaceJob(oldJobId: string, newJobId: string): Promise<void>;
   countDoneBlobsByUser(userId: string): Promise<number>;
   countJobsForSession(userId: string, coachingSessionId: string): Promise<JobCounts>;
   /** Pending jobs older than `olderThan` (for the cron health log). */
@@ -136,6 +138,19 @@ export function createMemoryEventsRepo(db: Queryable): MemoryEventsRepo {
 
     async markJobFailed(job) {
       await applyFailed(db, job, new Date());
+    },
+
+    async replaceJob(oldJobId, newJobId) {
+      await db
+        .update(memoryEvents)
+        .set({
+          jobId: newJobId,
+          status: "pending",
+          errorCode: null,
+          completedAt: null,
+          latencyMs: null,
+        })
+        .where(and(eq(memoryEvents.jobId, oldJobId), sql`${memoryEvents.status} <> 'done'`));
     },
 
     async countDoneBlobsByUser(userId) {

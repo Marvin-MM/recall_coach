@@ -12,6 +12,8 @@ export interface FakeMemoryOptions {
   failRecall?: "unavailable" | "timeout" | false;
   /** Indexes (within a rememberMany call) that should fail. */
   failRememberIndexes?: readonly number[];
+  /** Texts that fail transiently this many times before succeeding. */
+  transientFailures?: Record<string, number>;
   /** Seed memories per namespace. */
   seed?: Record<string, readonly string[]>;
 }
@@ -94,6 +96,19 @@ export function createFakeMemory(initial: FakeMemoryOptions = {}): FakeMemoryPor
       const bucket = store.get(args.namespace) ?? [];
       store.set(args.namespace, bucket);
       return jobs.map((job): RememberOutcome => {
+        const text = args.texts[job.index] ?? "";
+        const remaining = options.transientFailures?.[text] ?? 0;
+        if (remaining > 0 && options.transientFailures) {
+          options.transientFailures[text] = remaining - 1;
+          return {
+            ok: false,
+            index: job.index,
+            jobId: job.jobId,
+            errorCode: "JOB_FAILED_TRANSIENT",
+            latencyMs: 1,
+            detail: "RpcError: Too Many Requests",
+          };
+        }
         if (options.failRememberIndexes?.includes(job.index)) {
           return {
             ok: false,

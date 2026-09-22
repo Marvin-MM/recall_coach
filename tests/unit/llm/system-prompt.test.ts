@@ -15,6 +15,7 @@ const mistake = mem(
     kind: "mistake",
     text: "The user skipped the Result in a STAR answer about a missed deadline.",
     at: new Date("2026-09-22T10:00:00Z"),
+    sessionId: "3f2b9c1e-8a4d-4f6b-9c2e-1a2b3c4d5e6f",
   }),
   "blob-1",
 );
@@ -126,5 +127,21 @@ describe("first-turn wording", () => {
     });
     expect(p).toContain('Do not say "last session"');
     expect(p).not.toContain("recapping where they left off");
+  });
+});
+
+describe("setup notes", () => {
+  it("labels memories without a session as from setup", () => {
+    const setupGoal = mem(
+      encodeFact({
+        kind: "goal",
+        text: "The user wants to improve at: STAR results.",
+        at: new Date("2026-09-22T10:00:00Z"),
+      }),
+      "blob-goal",
+    );
+    const p = buildSystemPrompt({ ...base, facts: [setupGoal] });
+    expect(p).toContain("[goal · Tue 22 Sep, 2 days ago · from setup]");
+    expect(p).toContain('never describe them as "last session"');
   });
 });

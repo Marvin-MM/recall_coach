@@ -60,7 +60,8 @@ function daysUntil(isoDate: string, now: Date): number | null {
 function memoryLine(m: RecalledMemory, now: Date): string {
   const d = m.decoded;
   if (!d) return `- [note] ${escapeMemoryText(m.text)}`;
-  return `- [${d.kind} · ${formatDay(d.at, now)}] ${escapeMemoryText(d.body)}`;
+  const source = d.sessionId ? "" : " · from setup";
+  return `- [${d.kind} · ${formatDay(d.at, now)}${source}] ${escapeMemoryText(d.body)}`;
 }
 
 function profileLine(profile: CoachProfile, now: Date): string {
@@ -204,6 +205,7 @@ export function buildSystemPrompt(input: SystemPromptInput): string {
     "MEMORY POLICY:",
     '- Use these notes naturally and specifically (e.g. "Last Tuesday you forgot to discuss failure modes"). Use the dates given; do not invent dates.',
     "- Never invent memories, sessions, scores or details that are not in <coach_memory>.",
+    '- Notes marked "from setup" come from the user\'s onboarding answers, not from a practice session — never describe them as "last session" or "last time".',
     "- If a past mistake did not recur in this answer, say so explicitly — that is progress.",
   ];
   if (empty) {

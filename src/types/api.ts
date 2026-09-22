@@ -29,6 +29,8 @@ export interface MeDto {
   onboarded: boolean;
   memoryConsent: boolean;
   isAdmin: boolean;
+  /** Memories saved on Walrus for this user (drives the launcher's recap dot). */
+  doneMemories: number;
 }
 
 export interface OnboardingResultDto {

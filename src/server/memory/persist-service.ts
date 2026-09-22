@@ -4,7 +4,7 @@ import { log } from "@/lib/log";
 import { sleep as defaultSleep } from "@/lib/timeout";
 import type { MemoryKind } from "@/types/domain";
 import type { CoachProfile, RememberOutcome } from "@/types/memory";
-import type { MemoryEventsRepo } from "../db/repositories/memory-events.repo";
+import type { AcceptedJob, MemoryEventsRepo } from "../db/repositories/memory-events.repo";
 import type { ExtractionResult } from "../llm/extraction";
 import type { ExtractionPromptInput } from "../llm/prompts/extraction";
 import { dedupeAgainst } from "./dedup";
@@ -73,72 +73,103 @@ interface StoreArgs {
  * Remember `items` in one namespace with full metadata bookkeeping:
  * pending rows are written (one transaction) as soon as the relayer accepts
  * the jobs, then completed (one transaction per batch) as done/failed.
- * Only submissions that were NOT accepted are retried (500 ms, 2 s), so a
- * retry can never duplicate a paid write.
+ *
+ * Retries (500 ms, 2 s) cover two cases, both safe because no blob exists:
+ * - submissions that were never accepted (network/5xx/429 from the relayer);
+ * - accepted jobs the relayer reports as failed for a transient upstream
+ *   reason (e.g. Sui RPC "Too Many Requests"). The existing metadata row is
+ *   re-pointed to the new job id, so one memory = one row.
  */
 export async function storeMemories(deps: PersistDeps, args: StoreArgs): Promise<StoreSummary> {
   const sleep = deps.sleep ?? defaultSleep;
   if (args.items.length === 0) return { accepted: 0, done: 0, failed: 0, pending: 0, stored: [] };
 
-  let outcomes: RememberOutcome[] | null = null;
+  const final = new Map<number, RememberOutcome>();
+  const rowJobId = new Map<number, string>();
+  let toSubmit = args.items.map((_, i) => i);
   let lastError: unknown;
-  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length && toSubmit.length > 0; attempt++) {
+    if (attempt > 0) await sleep(RETRY_DELAYS_MS[attempt - 1] ?? 0);
+    const batch = toSubmit;
+    const isLastAttempt = attempt === RETRY_DELAYS_MS.length;
+    let outcomes: RememberOutcome[];
     try {
       outcomes = await deps.memory.rememberMany({
         namespace: args.namespace,
-        texts: args.items.map((i) => i.line),
-        onAccepted: (jobs) =>
-          deps.memoryEvents.recordAcceptedJobs(
-            jobs.map((job) => ({
-              userId: args.userId,
-              coachingSessionId: args.sessionId,
-              namespace: args.namespace,
-              kind: args.items[job.index]?.kind ?? "goal",
-              jobId: job.jobId,
-            })),
-          ),
+        texts: batch.map((i) => args.items[i]?.line ?? ""),
+        onAccepted: async (jobs) => {
+          const fresh: AcceptedJob[] = [];
+          for (const job of jobs) {
+            const idx = batch[job.index];
+            if (idx === undefined) continue;
+            const previous = rowJobId.get(idx);
+            rowJobId.set(idx, job.jobId);
+            if (previous) {
+              await deps.memoryEvents.replaceJob(previous, job.jobId);
+            } else {
+              fresh.push({
+                userId: args.userId,
+                coachingSessionId: args.sessionId,
+                namespace: args.namespace,
+                kind: args.items[idx]?.kind ?? "goal",
+                jobId: job.jobId,
+              });
+            }
+          }
+          await deps.memoryEvents.recordAcceptedJobs(fresh);
+        },
       });
-      break;
     } catch (error) {
       lastError = error;
-      const { transient } = classifyMemoryError(error);
-      const delay = RETRY_DELAYS_MS[attempt];
-      if (!transient || delay === undefined) break;
-      await sleep(delay);
+      if (!classifyMemoryError(error).transient) break;
+      continue;
+    }
+
+    const retry: number[] = [];
+    for (const o of outcomes) {
+      const idx = batch[o.index];
+      if (idx === undefined) continue;
+      const retryable = !o.ok && (o.errorCode === "JOB_FAILED_TRANSIENT" || o.jobId === null);
+      if (!o.ok) {
+        log.warn("memory.job_failed", {
+          errorCode: o.errorCode,
+          detail: o.detail ?? null,
+          attempt,
+          willRetry: retryable && !isLastAttempt,
+        });
+      }
+      if (retryable && !isLastAttempt) retry.push(idx);
+      else final.set(idx, { ...o, index: idx });
+    }
+    toSubmit = retry;
+  }
+
+  // Items that never got a final outcome (retries exhausted on thrown errors).
+  const code = lastError === undefined ? "JOB_FAILED" : classifyMemoryError(lastError).error.code;
+  for (const idx of toSubmit) {
+    if (!final.has(idx)) {
+      final.set(idx, {
+        ok: false,
+        index: idx,
+        jobId: rowJobId.get(idx) ?? null,
+        errorCode: code,
+        latencyMs: null,
+      });
     }
   }
 
-  if (!outcomes) {
-    // Never accepted: record failed rows (synthetic job ids) so the session
-    // summary can honestly say "N memories couldn't be saved".
-    const code = errorCode(classifyMemoryError(lastError).error);
-    try {
-      const rows = args.items.map((item) => ({
-        userId: args.userId,
-        coachingSessionId: args.sessionId,
-        namespace: args.namespace,
-        kind: item.kind,
-        jobId: `unaccepted-${randomUUID()}`,
-      }));
-      await deps.memoryEvents.recordAcceptedJobs(rows);
-      await deps.memoryEvents.markJobsFailed(
-        rows.map((r) => ({ jobId: r.jobId, errorCode: code, latencyMs: null })),
-      );
-    } catch (error) {
-      log.error("memory.bookkeeping_failed", { stage: "unaccepted", error });
-    }
-    return { accepted: 0, done: 0, failed: args.items.length, pending: 0, stored: [] };
-  }
-
+  const outcomes = [...final.values()].sort((a, b) => a.index - b.index);
   const done = outcomes.filter((o): o is Extract<RememberOutcome, { ok: true }> => o.ok);
-  const failedAccepted = outcomes.filter(
-    (o): o is Extract<RememberOutcome, { ok: false }> & { jobId: string } =>
-      !o.ok && o.jobId !== null && !STILL_PENDING_CODES.has(o.errorCode),
+  const failures = outcomes.filter((o): o is Extract<RememberOutcome, { ok: false }> => !o.ok);
+  const stillPending = failures.filter(
+    (o) => o.jobId !== null && STILL_PENDING_CODES.has(o.errorCode),
   );
-  const stillPending = outcomes.filter(
-    (o) => !o.ok && o.jobId !== null && STILL_PENDING_CODES.has(o.errorCode),
-  ).length;
-  const failedUnaccepted = outcomes.filter((o) => !o.ok && o.jobId === null);
+  const failedAccepted = failures.filter(
+    (o): o is Extract<RememberOutcome, { ok: false }> & { jobId: string } =>
+      o.jobId !== null && !STILL_PENDING_CODES.has(o.errorCode),
+  );
+  const unaccepted = failures.filter((o) => o.jobId === null);
 
   let doneCount = done.length;
   try {
@@ -153,15 +184,34 @@ export async function storeMemories(deps: PersistDeps, args: StoreArgs): Promise
         latencyMs: o.latencyMs,
       })),
     );
+    if (unaccepted.length > 0) {
+      // Never accepted: record failed rows (synthetic job ids) so the session
+      // summary can honestly say "N memories couldn't be saved".
+      const rows = unaccepted.map((o) => ({
+        userId: args.userId,
+        coachingSessionId: args.sessionId,
+        namespace: args.namespace,
+        kind: args.items[o.index]?.kind ?? ("goal" as const),
+        jobId: `unaccepted-${randomUUID()}`,
+      }));
+      await deps.memoryEvents.recordAcceptedJobs(rows);
+      await deps.memoryEvents.markJobsFailed(
+        rows.map((r, i) => ({
+          jobId: r.jobId,
+          errorCode: unaccepted[i]?.errorCode ?? code,
+          latencyMs: null,
+        })),
+      );
+    }
   } catch (error) {
     log.error("memory.bookkeeping_failed", { stage: "complete", error });
   }
 
   return {
-    accepted: outcomes.length - failedUnaccepted.length,
+    accepted: outcomes.length - unaccepted.length,
     done: doneCount,
-    failed: outcomes.length - doneCount - stillPending,
-    pending: stillPending,
+    failed: outcomes.length - doneCount - stillPending.length,
+    pending: stillPending.length,
     stored: done.map((o) => ({ index: o.index, blobId: o.blobId })),
   };
 }

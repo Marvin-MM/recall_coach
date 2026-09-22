@@ -17,10 +17,11 @@ export interface MemoryDataPart {
   amnesia: boolean;
 }
 
-export interface CoachDataParts {
+// A type alias (not an interface) so it satisfies AI SDK's `UIDataTypes`
+// without an index signature that would widen `data-memory` to unknown.
+export type CoachDataParts = {
   memory: MemoryDataPart;
-  [key: string]: unknown;
-}
+};
 
 export interface CoachMessageMetadata {
   createdAt?: number;

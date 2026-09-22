@@ -8,7 +8,11 @@ import {
 } from "@/lib/errors";
 import { classifyMemoryError } from "@/server/memory/errors";
 import { encodeFact } from "@/server/memory/memory-format";
-import { createMemWalPort, type MemWalLike } from "@/server/memory/memwal-adapter";
+import {
+  createMemWalPort,
+  isTransientJobError,
+  type MemWalLike,
+} from "@/server/memory/memwal-adapter";
 
 const cfg = { recallTimeoutMs: 1000, saveTimeoutMs: 5000, pollIntervalMs: 1 };
 
@@ -198,5 +202,20 @@ describe("classifyMemoryError", () => {
     const c = classifyMemoryError(raw);
     expect(c.error).toBeInstanceOf(type);
     expect(c.transient).toBe(transient);
+  });
+});
+
+describe("isTransientJobError", () => {
+  it.each([
+    [
+      "Internal Error: seal encrypt failed: seal/encrypt failed during read_account_identity: RpcError: Too Many Requests (traceId=x, timeoutMs=25000)",
+      true,
+    ],
+    ["upstream returned 503", true],
+    ["walrus upload timed out", true],
+    ["invalid namespace", false],
+    [undefined, false],
+  ])("%s → %s", (msg, expected) => {
+    expect(isTransientJobError(msg)).toBe(expected);
   });
 });

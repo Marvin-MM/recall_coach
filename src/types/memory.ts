@@ -40,7 +40,15 @@ export interface RecalledMemory {
 /** Per-item outcome of a remember-and-wait. */
 export type RememberOutcome =
   | { ok: true; index: number; jobId: string; blobId: string; latencyMs: number }
-  | { ok: false; index: number; jobId: string | null; errorCode: string; latencyMs: number | null };
+  | {
+      ok: false;
+      index: number;
+      jobId: string | null;
+      errorCode: string;
+      latencyMs: number | null;
+      /** Relayer-provided reason (for logs only; never contains memory text). */
+      detail?: string;
+    };
 
 export interface AcceptedMemoryJob {
   index: number;

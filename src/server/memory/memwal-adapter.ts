@@ -76,6 +76,18 @@ export function getMemWalClient(config: MemWalClientConfig): MemWal {
   return client;
 }
 
+/**
+ * Relayer job errors caused by upstream hiccups (observed on Mainnet:
+ * "seal encrypt failed … RpcError: Too Many Requests"). The job produced no
+ * blob, so resubmitting is safe.
+ */
+export function isTransientJobError(error: string | undefined): boolean {
+  if (!error) return false;
+  return /too many requests|\b429\b|rate.?limit|timed? ?out|timeout|temporar|unavailable|\b50[234]\b|econnreset|socket hang up/i.test(
+    error,
+  );
+}
+
 function chunk<T>(items: readonly T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
@@ -232,8 +244,17 @@ export function createMemWalPort(client: MemWalLike, config: MemWalAdapterConfig
                   ? "MEMORY_TIMEOUT"
                   : r?.error === "job not found"
                     ? "JOB_NOT_FOUND"
-                    : "JOB_FAILED";
-            outcomes.push({ ok: false, index: job.index, jobId: job.jobId, errorCode, latencyMs });
+                    : isTransientJobError(r?.error)
+                      ? "JOB_FAILED_TRANSIENT"
+                      : "JOB_FAILED";
+            outcomes.push({
+              ok: false,
+              index: job.index,
+              jobId: job.jobId,
+              errorCode,
+              latencyMs,
+              ...(r?.error ? { detail: r.error.slice(0, 240) } : {}),
+            });
           }
         });
       }

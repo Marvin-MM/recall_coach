@@ -242,6 +242,24 @@ describe("memory events repo", () => {
     expect(c[0]?.errorCode).toBe("DUPLICATE_BLOB_ID");
   });
 
+  it("re-points a failed row to a resubmitted job", async () => {
+    const u = await insertUser(t.db);
+    const mem = createMemoryEventsRepo(t.db);
+    await mem.recordAcceptedJobs([
+      { userId: u.id, coachingSessionId: null, namespace: "ns", kind: "mistake", jobId: "old" },
+    ]);
+    await mem.markJobsFailed([{ jobId: "old", errorCode: "JOB_FAILED_TRANSIENT", latencyMs: 5 }]);
+    await mem.replaceJob("old", "new");
+    const rows = await t.db.select().from(schema.memoryEvents);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      jobId: "new",
+      status: "pending",
+      errorCode: null,
+      kind: "mistake",
+    });
+  });
+
   it("counts stale pending jobs", async () => {
     const u = await insertUser(t.db);
     const mem = createMemoryEventsRepo(t.db);

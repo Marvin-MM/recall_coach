@@ -280,6 +280,7 @@ describe("memory inspector + me", () => {
     const me = createMeHandler({
       requireUser: as(alice),
       userSettings: createUserSettingsRepo(t.db),
+      memoryEvents: createMemoryEventsRepo(t.db),
       adminEmails: ["alice@example.test"],
     });
     expect(await (await me(req("/api/me"))).json()).toMatchObject({
