@@ -1,4 +1,4 @@
-import { and, eq, inArray, lt, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, lt, sql } from "drizzle-orm";
 import { type MemoryKind, type MemoryStatus, memoryEvents } from "../schema";
 import type { Queryable, Tx } from "../types";
 
@@ -40,6 +40,13 @@ export interface MemoryEventsRepo {
   countJobsForSession(userId: string, coachingSessionId: string): Promise<JobCounts>;
   /** Pending jobs older than `olderThan` (for the cron health log). */
   countStalePending(olderThan: Date): Promise<number>;
+  /** Pending jobs to reconcile, oldest first. Scoped to a user (and session) when given. */
+  listPending(filter: {
+    userId?: string;
+    coachingSessionId?: string;
+    createdBefore: Date;
+    limit: number;
+  }): Promise<{ jobId: string; createdAt: Date }[]>;
 }
 
 const UNIQUE_VIOLATION = "23505";
@@ -153,6 +160,23 @@ export function createMemoryEventsRepo(db: Queryable): MemoryEventsRepo {
       const counts: JobCounts = { pending: 0, done: 0, failed: 0 };
       for (const row of rows) counts[row.status] = row.count;
       return counts;
+    },
+
+    async listPending(filter) {
+      const conditions = [
+        eq(memoryEvents.status, "pending"),
+        lt(memoryEvents.createdAt, filter.createdBefore),
+      ];
+      if (filter.userId) conditions.push(eq(memoryEvents.userId, filter.userId));
+      if (filter.coachingSessionId) {
+        conditions.push(eq(memoryEvents.coachingSessionId, filter.coachingSessionId));
+      }
+      return db
+        .select({ jobId: memoryEvents.jobId, createdAt: memoryEvents.createdAt })
+        .from(memoryEvents)
+        .where(and(...conditions))
+        .orderBy(asc(memoryEvents.createdAt))
+        .limit(filter.limit);
     },
 
     async countStalePending(olderThan) {

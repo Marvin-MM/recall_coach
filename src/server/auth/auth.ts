@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { type BetterAuthPlugin, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -54,6 +55,9 @@ export const auth = betterAuth({
     updateAge: ONE_DAY,
   },
   advanced: {
+    // Lowercase UUIDs: memory namespaces are derived from the user id and
+    // normalized to lowercase, so ids must never differ only by case.
+    database: { generateId: () => randomUUID() },
     cookiePrefix: siteConfig.authCookiePrefix,
     // Better Auth adds the `__Secure-` prefix whenever secure cookies are on.
     useSecureCookies: isProduction,

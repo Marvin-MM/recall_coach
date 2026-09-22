@@ -11,6 +11,9 @@ importers:
       '@ai-sdk/groq':
         specifier: ^3.0.66
         version: 3.0.66(zod@4.6.5)
+      '@ai-sdk/provider':
+        specifier: 3.0.16
+        version: 3.0.16
       '@ai-sdk/react':
         specifier: ^3.0.289
         version: 3.0.289(react@19.2.8)(zod@4.6.5)
