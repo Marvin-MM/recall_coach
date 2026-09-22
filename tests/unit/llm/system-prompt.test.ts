@@ -111,3 +111,20 @@ describe("helpers", () => {
     expect(formatDay("nope", NOW)).toBe("unknown date");
   });
 });
+
+describe("first-turn wording", () => {
+  it("does not claim a past session when only the onboarding profile is known", () => {
+    const p = buildSystemPrompt({
+      mode: "mock_interview",
+      profile: { targetRole: "SRE" },
+      facts: [],
+      recap: [],
+      memoryEnabled: true,
+      degraded: false,
+      firstTurn: true,
+      now: new Date("2026-09-24T09:00:00Z"),
+    });
+    expect(p).toContain('Do not say "last session"');
+    expect(p).not.toContain("recapping where they left off");
+  });
+});

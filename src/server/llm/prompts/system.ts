@@ -210,9 +210,13 @@ export function buildSystemPrompt(input: SystemPromptInput): string {
     policy.push(
       "- You have no notes about this user yet: do not pretend to know them. Briefly ask for their target role, interview date and how they like to learn, then start.",
     );
-  } else if (input.firstTurn && (recap.length > 0 || input.profile)) {
+  } else if (input.firstTurn && recap.length > 0) {
     policy.push(
-      "- This is the first message of a new session: open with ONE specific sentence recapping where they left off (most recent mistake or progress) and offer to start there, then continue with the mode.",
+      "- This is the first message of a new session: open with ONE specific sentence recapping where they left off (most recent mistake or progress, with its date) and offer to start there, then continue with the mode.",
+    );
+  } else if (input.firstTurn) {
+    policy.push(
+      "- Only the profile the user shared during setup is known — there are no past practice sessions yet. Do not say \"last session\" or \"last time\". Greet them, reference their target and focus areas in one sentence, and start.",
     );
   }
   sections.push(policy.join("\n"));
