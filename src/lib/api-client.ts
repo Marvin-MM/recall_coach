@@ -1,8 +1,8 @@
 import type { CreateSessionInput, OnboardingInput, PatchSessionInput } from "@/lib/schemas/api";
 import type {
   ApiErrorBody,
-  MeDto,
   MemoryInspectorDto,
+  MeResponse,
   OnboardingResultDto,
   SessionDetailDto,
   SessionDto,
@@ -49,7 +49,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  me: () => request<MeDto>("/api/me"),
+  me: () => request<MeResponse>("/api/me"),
   sessions: () => request<SessionsListDto>("/api/sessions"),
   createSession: (input: CreateSessionInput) =>
     request<SessionDto>("/api/sessions", { method: "POST", body: JSON.stringify(input) }),

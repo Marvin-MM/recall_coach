@@ -9,11 +9,13 @@ interface LauncherProps {
   controlsId: string;
   hasRecap: boolean;
   onToggle: () => void;
+  /** Hover/focus/touch intent: prefetch the panel chunk before the click lands. */
+  onIntent?: () => void;
 }
 
 /** 56px Sui-blue launcher, ink icon + ink hairline (≥3:1 boundary on paper). */
 export const Launcher = forwardRef<HTMLButtonElement, LauncherProps>(function Launcher(
-  { open, controlsId, hasRecap, onToggle },
+  { open, controlsId, hasRecap, onToggle, onIntent },
   ref,
 ) {
   const reduce = useReducedMotion();
@@ -22,6 +24,9 @@ export const Launcher = forwardRef<HTMLButtonElement, LauncherProps>(function La
       ref={ref}
       type="button"
       onClick={onToggle}
+      onPointerEnter={onIntent}
+      onFocus={onIntent}
+      onTouchStart={onIntent}
       aria-label={open ? "Close interview coach" : "Open interview coach"}
       aria-expanded={open}
       aria-controls={controlsId}

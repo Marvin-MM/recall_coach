@@ -151,12 +151,12 @@ export function WhatItRemembers() {
           const meta = KIND_META[kind];
           const Icon = meta.icon;
           return (
-            <div key={kind} className="flex gap-3 border-b border-border pb-4">
-              <Icon className="mt-0.5 size-4 shrink-0 text-link" aria-hidden />
-              <div>
-                <dt className="font-medium">{meta.label}</dt>
-                <dd className="text-sm text-muted-foreground">{body}</dd>
-              </div>
+            <div key={kind} className="border-b border-border pb-4 pl-7">
+              <dt className="relative font-medium">
+                <Icon className="absolute top-0.5 -left-7 size-4 text-link" aria-hidden />
+                {meta.label}
+              </dt>
+              <dd className="text-sm text-muted-foreground">{body}</dd>
             </div>
           );
         })}

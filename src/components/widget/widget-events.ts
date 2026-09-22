@@ -6,3 +6,10 @@ export const OPEN_WIDGET_EVENT = "recall:open-widget";
 export function openCoachWidget(): void {
   window.dispatchEvent(new CustomEvent(OPEN_WIDGET_EVENT));
 }
+
+export const PREFETCH_WIDGET_EVENT = "recall:prefetch-widget";
+
+/** Ask the widget to prefetch its panel chunk (hover/focus on a CTA). */
+export function prefetchCoachWidget(): void {
+  window.dispatchEvent(new CustomEvent(PREFETCH_WIDGET_EVENT));
+}

@@ -48,16 +48,19 @@ export function createMemoryInspectorHandler(deps: MemoryInspectorDeps) {
       const user = await deps.requireUser(request);
       await deps.rateLimit.enforce("api", user.id);
       const refresh = new URL(request.url).searchParams.get("refresh") === "1";
-      const cached = refresh ? undefined : cache.get(user.id);
-      if (cached) return jsonOk(cached);
 
-      const settings = await deps.userSettings.get(user.id);
       // Complete slow saves (e.g. onboarding jobs) so totals are current.
       await reconcilePendingJobs({
         memory: deps.memory(),
         memoryEvents: deps.memoryEvents,
         userId: user.id,
       });
+      // The cache is only valid while no new memory has been saved since.
+      const doneBlobs = await deps.memoryEvents.countDoneBlobsByUser(user.id);
+      const cached = refresh ? undefined : cache.get(user.id);
+      if (cached && cached.totals.doneBlobs === doneBlobs) return jsonOk(cached);
+
+      const settings = await deps.userSettings.get(user.id);
       const ns = deriveNamespaces(user.id, settings?.namespaceVersion ?? 1, deps.namespacePrefix);
       const memory = deps.memory();
       const queries = [
@@ -98,7 +101,7 @@ export function createMemoryInspectorHandler(deps: MemoryInspectorDeps) {
         profileAt: profile?.at ?? null,
         groups,
         totals: {
-          doneBlobs: await deps.memoryEvents.countDoneBlobsByUser(user.id),
+          doneBlobs,
           recalled: unique.length,
         },
         degraded,

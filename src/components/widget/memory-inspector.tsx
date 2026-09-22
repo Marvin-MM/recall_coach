@@ -76,11 +76,13 @@ export function MemoryInspector({
               variant="outline"
               size="sm"
               className="ml-auto"
-              onClick={() => void load(true)}
-              disabled={loading}
+              onClick={() => {
+                if (!loading) void load(true);
+              }}
+              aria-busy={loading}
             >
               <RefreshCw className={loading ? "animate-spin" : ""} aria-hidden />
-              Refresh
+              {loading ? "Refreshing…" : "Refresh"}
             </Button>
           </div>
         </SheetHeader>

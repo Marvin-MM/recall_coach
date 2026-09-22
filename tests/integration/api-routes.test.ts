@@ -275,20 +275,69 @@ describe("memory inspector + me", () => {
     ).toBe(0);
   });
 
+  it("invalidates the cached view as soon as a new memory is saved", async () => {
+    const ns = deriveNamespaces(alice.id, 1, PREFIX);
+    const inspect = createMemoryInspectorHandler({
+      requireUser: as(alice),
+      rateLimit: noLimit,
+      userSettings: createUserSettingsRepo(t.db),
+      memoryEvents: createMemoryEventsRepo(t.db),
+      memory: () => memory,
+      namespacePrefix: PREFIX,
+      explorerBlobUrl: "x/",
+    });
+    const first = (await (await inspect(req("/api/memory"))).json()) as MemoryInspectorDto;
+    expect(first.totals.recalled).toBe(0);
+    const [o] = await memory.rememberMany({
+      namespace: ns.facts,
+      texts: ["[kind=goal][at=2026-09-21T10:00:00.000Z] interview mistakes goal to practise"],
+    });
+    const repo = createMemoryEventsRepo(t.db);
+    await repo.recordAcceptedJobs([
+      {
+        userId: alice.id,
+        coachingSessionId: null,
+        namespace: ns.facts,
+        kind: "goal",
+        jobId: o?.jobId ?? "",
+      },
+    ]);
+    await repo.markJobsDone([
+      { jobId: o?.jobId ?? "", blobId: o?.ok ? o.blobId : "b", latencyMs: 1 },
+    ]);
+    const second = (await (await inspect(req("/api/memory"))).json()) as MemoryInspectorDto;
+    expect(second.totals).toMatchObject({ doneBlobs: 1, recalled: 1 });
+  });
+
   it("GET /api/me reports onboarding + admin flags", async () => {
     await createUserSettingsRepo(t.db).completeOnboarding(alice.id, new Date());
     const me = createMeHandler({
-      requireUser: as(alice),
+      getOptionalUser: async () => alice,
       userSettings: createUserSettingsRepo(t.db),
       memoryEvents: createMemoryEventsRepo(t.db),
       adminEmails: ["alice@example.test"],
     });
     expect(await (await me(req("/api/me"))).json()).toMatchObject({
+      signedIn: true,
       user: { firstName: "Alice" },
       onboarded: true,
       memoryConsent: true,
       isAdmin: true,
     });
+  });
+});
+
+describe("GET /api/me for visitors", () => {
+  it("returns 200 { signedIn: false } instead of a 401", async () => {
+    const me = createMeHandler({
+      getOptionalUser: async () => null,
+      userSettings: createUserSettingsRepo(t.db),
+      memoryEvents: createMemoryEventsRepo(t.db),
+      adminEmails: [],
+    });
+    const res = await me(req("/api/me"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ signedIn: false });
   });
 });
 

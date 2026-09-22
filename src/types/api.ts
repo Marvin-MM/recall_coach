@@ -33,6 +33,9 @@ export interface MeDto {
   doneMemories: number;
 }
 
+/** GET /api/me — 200 for visitors too, so the widget can ask "who am I?" without a 401. */
+export type MeResponse = { signedIn: false } | ({ signedIn: true } & MeDto);
+
 export interface OnboardingResultDto {
   ok: true;
   savedJobs: number;

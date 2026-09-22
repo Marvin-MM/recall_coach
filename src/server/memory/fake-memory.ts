@@ -31,12 +31,15 @@ export interface FakeMemoryPort extends MemoryPort {
 export function createFakeMemory(initial: FakeMemoryOptions = {}): FakeMemoryPort {
   let options: FakeMemoryOptions = { ...initial };
   let sequence = 0;
+  // Unique per process so ids never collide with rows from earlier runs
+  // (job_id / blob_id are UNIQUE in memory_events).
+  const runId = crypto.randomUUID().slice(0, 8);
   const store = new Map<string, { blobId: string; text: string; createdAt: string }[]>();
   for (const [ns, texts] of Object.entries(initial.seed ?? {})) {
     store.set(
       ns,
       texts.map((text) => ({
-        blobId: `fake-blob-${++sequence}`,
+        blobId: `fake-blob-${++sequence}-${runId}`,
         text,
         createdAt: new Date().toISOString(),
       })),
@@ -90,8 +93,15 @@ export function createFakeMemory(initial: FakeMemoryOptions = {}): FakeMemoryPor
 
     async rememberMany(args) {
       calls.rememberMany.push(args);
-      const jobs = args.texts.map((_, index) => ({ index, jobId: `fake-job-${++sequence}` }));
-      await args.onAccepted?.(jobs);
+      const jobs = args.texts.map((_, index) => ({
+        index,
+        jobId: `fake-job-${++sequence}-${runId}`,
+      }));
+      try {
+        await args.onAccepted?.(jobs);
+      } catch {
+        // Same contract as the MemWal adapter: bookkeeping failures never lose writes.
+      }
       if (options.latencyMs) await sleep(options.latencyMs);
       const bucket = store.get(args.namespace) ?? [];
       store.set(args.namespace, bucket);
@@ -118,7 +128,7 @@ export function createFakeMemory(initial: FakeMemoryOptions = {}): FakeMemoryPor
             latencyMs: 1,
           };
         }
-        const blobId = `fake-blob-${++sequence}`;
+        const blobId = `fake-blob-${++sequence}-${runId}`;
         bucket.push({
           blobId,
           text: args.texts[job.index] ?? "",
