@@ -108,14 +108,14 @@ pnpm lint && pnpm typecheck
 pnpm test            # Vitest: unit + integration (PGlite, fake memory, mock model)
 pnpm test:coverage   # ≥80% lines for src/server/**
 pnpm test:e2e        # Playwright + axe (requires .env.e2e — see below)
-pnpm ci              # lint + typecheck + test + build
+pnpm run ci              # lint + typecheck + test + build
 ```
 
 E2E runs `next dev` with test-only drivers. Create `.env.e2e` from `.env.example` with a **throwaway** `DATABASE_URL`/`DATABASE_URL_UNPOOLED`, `MEMORY_DRIVER=fake`, `LLM_DRIVER=fake`, `E2E_AUTH_SECRET=<random>`, `MEMWAL_NAMESPACE_PREFIX=coach-e2e-v1`, and `NEXT_PUBLIC_APP_URL=BETTER_AUTH_URL=http://localhost:3100`.
 
 ## Deployment (Vercel)
 
-1. Push to a public GitHub repo (CI runs `pnpm ci` and a gitleaks scan on every PR).
+1. Push to a public GitHub repo (CI runs `pnpm run ci` and a gitleaks scan on every PR).
 2. Import into Vercel (framework Next.js). Add Neon and Upstash from the Vercel Marketplace; add the remaining variables for Production and Preview. Use a separate Neon branch **and** `MEMWAL_NAMESPACE_PREFIX=coach-preview-v1` for Preview.
 3. Run migrations against production: `DATABASE_URL_UNPOOLED=<prod direct url> pnpm db:migrate`.
 4. Google Cloud Console: OAuth consent screen → publish to production; add `https://<domain>/api/auth/callback/google`.

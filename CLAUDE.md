@@ -44,7 +44,7 @@ tests/unit|integration|e2e
 - Nothing under `server/` imports React.
 
 ## Commands
-- `pnpm dev` / `pnpm build` / `pnpm ci` (lint + typecheck + test + build)
+- `pnpm dev` / `pnpm build` / `pnpm run ci` (lint + typecheck + test + build)
 - `pnpm test` (Vitest unit + integration; `server-only` is aliased to a stub)
 - `pnpm test:e2e` (Playwright + axe; uses `MEMORY_DRIVER=fake`, `LLM_DRIVER=fake`, test DB)
 - `pnpm db:generate` / `pnpm db:migrate` (uses `DATABASE_URL_UNPOOLED`)

@@ -54,7 +54,7 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 ## Pre-submission verification
 
 ```bash
-pnpm ci                 # lint, typecheck, unit + integration tests, build
+pnpm run ci                 # lint, typecheck, unit + integration tests, build
 pnpm test:e2e           # Playwright + axe (needs .env.e2e)
 pnpm memwal:verify      # against Mainnet
 pnpm memwal:stats       # point DATABASE_URL at production (read-only queries)
