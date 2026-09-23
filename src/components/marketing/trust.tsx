@@ -159,8 +159,8 @@ export function Trust({ accountUrl }: { accountUrl: string }) {
 
         <div className="flex flex-col gap-3 border-l-2 border-warning-foreground/70 bg-warning px-4 py-3 text-sm text-warning-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            Walrus storage is immutable: a memory can't be erased once it's written. An in-app
-            “forget” isn't available yet.
+            Recall doesn't have a delete button yet. Walrus Memory can permanently delete stored
+            memories, so this is a gap in Recall, not a limit of the storage.
           </p>
           <Link href="/privacy" className="shrink-0 font-medium underline">
             Read the privacy details

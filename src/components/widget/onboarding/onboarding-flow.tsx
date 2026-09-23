@@ -393,8 +393,7 @@ export function OnboardingFlow({
                   Walrus, a public decentralized storage network. Only this coach can decrypt them.
                 </li>
                 <li>
-                  Walrus storage is immutable: a note can't be erased once it's written, so skip
-                  anything you wouldn't want kept.
+                  There's no delete button in Recall yet, so skip anything you wouldn't want kept.
                 </li>
                 <li>
                   Conversation transcripts are not stored by us. Don't share passwords or other

@@ -132,7 +132,7 @@ E2E runs `next dev` with test-only drivers. Create `.env.e2e` from `.env.example
 
 ## Known limitations
 
-- **No hard delete:** Walrus storage is immutable; “forget” can only hide a memory from the coach, not erase the blob.
+- **No in-app delete yet:** Walrus Memory supports permanent deletion through its Security Delete API (wallet-authenticated, run by the memory account owner); Recall doesn't expose it to users yet.
 - **Recall is semantic, not exact:** the profile is chosen as the newest snapshot among a few candidates.
 - **Mainnet saves are slow** (35–82 s measured) and a job can report `done` slightly before it is recallable — see [docs/SDK_NOTES.md](docs/SDK_NOTES.md).
 

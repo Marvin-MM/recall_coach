@@ -74,8 +74,9 @@ export default function PrivacyPage() {
           </li>
         </ul>
         <p className="border-l-2 border-warning-foreground/60 bg-warning px-3 py-2 text-sm text-warning-foreground">
-          Walrus storage is immutable. Deleting your account removes our database records and stops
-          the coach from recalling your notes, but it cannot erase blobs already written to Walrus.
+          Recall doesn't have a self-service delete yet. Walrus Memory supports permanently deleting
+          stored memories through its delete API, run by the memory account's owner (us); an in-app
+          control for it is not built yet.
         </p>
       </section>
 

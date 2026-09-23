@@ -6,7 +6,7 @@ Thank you for testing! Recall is an AI interview coach that keeps short notes ab
 
 - When you finish setup you'll be asked to agree to store coaching notes. They are **encrypted** and saved on **Walrus**, a public decentralized storage network. Only this coach can decrypt them.
 - Notes are short summaries like “Skipped the Result in a STAR answer about a missed deadline.” Your full conversation is **not** stored by us.
-- Walrus is **immutable**: a note can be hidden from the coach later, but the stored blob can't be erased. Don't share passwords, contact details or information about other people.
+- There's **no delete button in Recall yet** (Walrus Memory itself supports permanent deletion by the account owner). Don't share passwords, contact details or information about other people.
 - The organizers will only see pseudonymized counts (e.g. “user-2: 12 memories”). Nothing you write is published without your written OK.
 
 ## Day 1 — session 1 (≈15 min)

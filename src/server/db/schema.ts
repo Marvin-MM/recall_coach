@@ -41,7 +41,7 @@ export const userSettings = pgTable("user_settings", {
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
   onboardedAt: timestamptz("onboarded_at"),
-  /** Explicit consent to store memories on Walrus (public network, encrypted, immutable). */
+  /** Explicit consent to store memories on Walrus (public network, encrypted). */
   memoryConsentAt: timestamptz("memory_consent_at"),
   namespaceVersion: smallint("namespace_version").notNull().default(1),
   createdAt: timestamptz("created_at").notNull().defaultNow(),

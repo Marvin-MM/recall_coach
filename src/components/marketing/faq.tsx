@@ -66,7 +66,7 @@ const FAQ: { cat: Category; icon: LucideIcon; q: string; a: string }[] = [
     cat: "Memory & privacy",
     icon: Trash2,
     q: "Can I delete a memory?",
-    a: "Not in a way that erases it: Walrus blobs are immutable, and an in-app “forget” isn't available yet. That's why setup asks for consent first, and why Amnesia Mode exists.",
+    a: "Not from inside Recall yet. Walrus Memory supports permanently deleting stored memories, but Recall doesn't have a delete control for it so far. Until it does, setup asks for consent first, and Amnesia Mode lets you practise without saving anything.",
   },
   {
     cat: "Memory & privacy",
