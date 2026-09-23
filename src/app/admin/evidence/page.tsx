@@ -94,8 +94,8 @@ export default async function EvidencePage() {
         </dl>
         <p className={evidence.totals.meetsThreshold ? "text-link" : "text-muted-foreground"}>
           {evidence.totals.meetsThreshold
-            ? `Meets the hackathon threshold (≥${SUBMISSION_MIN_USERS} users with ≥${SUBMISSION_MIN_BLOBS} memories).`
-            : `Not yet at the hackathon threshold (≥${SUBMISSION_MIN_USERS} users with ≥${SUBMISSION_MIN_BLOBS} memories).`}
+            ? `Meets the evidence threshold (≥${SUBMISSION_MIN_USERS} users with ≥${SUBMISSION_MIN_BLOBS} memories).`
+            : `Not yet at the evidence threshold (≥${SUBMISSION_MIN_USERS} users with ≥${SUBMISSION_MIN_BLOBS} memories).`}
         </p>
       </section>
 

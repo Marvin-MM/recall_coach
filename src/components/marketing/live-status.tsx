@@ -30,22 +30,22 @@ export function LiveStatus() {
       ) : !health ? (
         <p className="text-muted-foreground">Checking live status…</p>
       ) : (
-        <ul className="space-y-1">
-          <li className="flex items-center gap-2">
-            {dot(health.relayer === "ok")} Walrus Memory relayer{" "}
-            <span className="font-mono text-xs text-muted-foreground">
-              {health.relayer}
-              {health.relayerVersion ? ` · v${health.relayerVersion}` : ""}
-            </span>
-          </li>
-          <li className="flex items-center gap-2">
-            {dot(health.db === "ok")} Session database{" "}
-            <span className="font-mono text-xs text-muted-foreground">{health.db}</span>
-          </li>
-          <li className="flex items-center gap-2">
-            {dot(true)} Model{" "}
-            <span className="font-mono text-xs text-muted-foreground">{health.model}</span>
-          </li>
+        <ul className="divide-y divide-border">
+          {[
+            {
+              label: "Walrus Memory",
+              ok: health.relayer === "ok",
+              value: `${health.relayer}${health.relayerVersion ? ` · v${health.relayerVersion}` : ""}`,
+            },
+            { label: "Session database", ok: health.db === "ok", value: health.db },
+            { label: "Model", ok: true, value: health.model.split("/").pop() ?? health.model },
+          ].map((row) => (
+            <li key={row.label} className="flex items-center gap-2 py-1.5">
+              {dot(row.ok)}
+              <span className="mr-auto">{row.label}</span>
+              <span className="truncate font-mono text-xs text-muted-foreground">{row.value}</span>
+            </li>
+          ))}
         </ul>
       )}
     </div>

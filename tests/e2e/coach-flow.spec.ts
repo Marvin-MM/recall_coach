@@ -12,6 +12,44 @@ test.describe("landing page", () => {
     await expectAccessible(page, "landing dark");
   });
 
+  test("reduced motion: hero resolves visible with no hydration errors", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const h1 = page.getByRole("heading", { level: 1 });
+    await expect(h1).toHaveCSS("opacity", "1");
+    await expect(page.getByRole("button", { name: "Start practicing" }).first()).toHaveCSS(
+      "opacity",
+      "1",
+    );
+    expect(errors.filter((e) => /hydrat/i.test(e))).toEqual([]);
+  });
+
+  test("mode comparison and FAQ tabs are keyboard operable", async ({ page }) => {
+    await page.goto("/");
+    const modes = page.getByRole("tablist", { name: "Compare modes" });
+    await modes.getByRole("tab", { name: "Amnesia Mode" }).click();
+    await expect(page.getByRole("tabpanel", { name: "Amnesia Mode" })).toContainText(
+      "Nothing — memory is off",
+    );
+    await page.keyboard.press("ArrowRight");
+    await expect(modes.getByRole("tab", { name: "With memory" })).toBeFocused();
+    await expect(page.getByRole("tabpanel", { name: "With memory" })).toContainText("Mistake");
+
+    const cats = page.getByRole("tablist", { name: "Question categories" });
+    await cats.getByRole("tab", { name: "Technical" }).click();
+    await expect(page.getByRole("button", { name: "Which AI model is it?" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    await page.keyboard.press("ArrowLeft");
+    await expect(cats.getByRole("tab", { name: "Coaching" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
   test("health endpoint reports db, relayer and model without secrets", async ({ request }) => {
     const res = await request.get("/api/health");
     const body = await res.json();

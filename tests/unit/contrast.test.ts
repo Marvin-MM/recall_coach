@@ -28,7 +28,7 @@ function contrast(a: string, b: string): number {
 }
 
 const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
-const themes = { light: tokens(css, ":root"), dark: tokens(css, ".dark") };
+const themes = { light: tokens(css, ":root"), dark: tokens(css, ".deep") };
 
 /** [foreground token, background token] — body text: ≥ 4.5:1 */
 const TEXT_PAIRS: [string, string][] = [

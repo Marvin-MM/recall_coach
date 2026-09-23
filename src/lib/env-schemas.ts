@@ -37,7 +37,7 @@ const FORBIDDEN_MODEL_PATTERNS: ReadonlyArray<(id: string) => boolean> = [
   (id) => id.includes("claude"),
 ];
 
-/** Hackathon rule: the model must not be an OpenAI or Anthropic model. */
+/** Project rule: the model must not be an OpenAI or Anthropic model. */
 export const groqModelSchema = z
   .string()
   .trim()

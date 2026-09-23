@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, .deep *));
 
 @theme inline {
   --color-background: var(--background);
@@ -100,7 +100,8 @@
   --sidebar-ring: #0a5bc4;
 }
 
-.dark {
+.dark,
+.deep {
   --background: #050b14;
   --foreground: #e8eef5;
   --card: #0b1522;
@@ -175,7 +176,8 @@
     --muted-foreground: #3f4650;
     --border: #8c8577;
   }
-  .dark {
+  .dark,
+  .deep {
     --muted-foreground: #c3cdd9;
     --border: #5a6b80;
   }
@@ -218,4 +220,118 @@
 
 .font-tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Deep band: always "deep sea", regardless of theme ---------- */
+.deep {
+  color: var(--foreground);
+  background: var(--background);
+  color-scheme: dark;
+}
+
+/* ---------- Isometric 3D stage (CSS-only models) ---------- */
+.iso-stage {
+  perspective: 1600px;
+  perspective-origin: 50% 30%;
+}
+.iso-plane {
+  transform-style: preserve-3d;
+  transform: rotateX(58deg) rotateZ(-42deg);
+}
+.iso-layer {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.iso-face-glow {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 55%, transparent),
+    0 40px 80px -20px color-mix(in oklab, var(--primary) 65%, transparent);
+}
+
+/* Faint blueprint grid used behind 3D scenes. */
+.blueprint-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--foreground) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--foreground) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 48px 48px;
+}
+
+@keyframes recall-float {
+  0%,
+  100% {
+    transform: translateZ(var(--z, 0px)) translateY(0);
+  }
+  50% {
+    transform: translateZ(var(--z, 0px)) translateY(-6px);
+  }
+}
+@keyframes recall-pulse-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@keyframes recall-dash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.animate-float {
+  animation: recall-float 6s ease-in-out infinite;
+}
+.animate-pulse-ring {
+  animation: recall-pulse-ring 2.4s ease-out infinite;
+}
+.animate-dash {
+  stroke-dasharray: 4 8;
+  animation: recall-dash 1.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-pulse-ring,
+  .animate-dash {
+    animation: none;
+  }
+}
+
+/* Animated data-flow connector (architecture diagram). */
+@keyframes recall-flow {
+  to {
+    background-position: 24px 0;
+  }
+}
+@keyframes recall-flow-y {
+  to {
+    background-position: 0 24px;
+  }
+}
+.flow-x {
+  background-image: repeating-linear-gradient(90deg, var(--link) 0 6px, transparent 6px 12px);
+  background-size: 24px 1px;
+  animation: recall-flow 0.9s linear infinite;
+}
+.flow-y {
+  background-image: repeating-linear-gradient(180deg, var(--link) 0 6px, transparent 6px 12px);
+  background-size: 1px 24px;
+  animation: recall-flow-y 0.9s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-x,
+  .flow-y {
+    animation: none;
+  }
 }

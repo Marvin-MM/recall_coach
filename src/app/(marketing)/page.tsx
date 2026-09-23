@@ -1,6 +1,8 @@
+import { Faq } from "@/components/marketing/faq";
 import { Hero } from "@/components/marketing/hero";
-import { BeforeAfter, HowItWorks, WhatItRemembers } from "@/components/marketing/sections";
-import { Faq, Trust } from "@/components/marketing/trust-faq-footer";
+import { HowItWorks } from "@/components/marketing/how-it-works";
+import { BeforeAfter, WhatItRemembers } from "@/components/marketing/sections";
+import { Trust } from "@/components/marketing/trust";
 import { env } from "@/env";
 
 export default function LandingPage() {

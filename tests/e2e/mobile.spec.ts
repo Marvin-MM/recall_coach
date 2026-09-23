@@ -18,3 +18,14 @@ test("mobile: launcher opens a full-height drawer and the landing page is access
   );
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test("mobile: menu sheet navigates to a section and closes", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open menu" }).click();
+  const menu = page.getByRole("dialog");
+  await menu.getByRole("link", { name: "FAQ" }).click();
+  await expect(menu).toBeHidden();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Questions, answered" }),
+  ).toBeInViewport();
+});

@@ -1,8 +1,9 @@
 "use client";
 
 import { MessageSquareText, X } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { forwardRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-media-query";
 
 interface LauncherProps {
   open: boolean;
@@ -18,7 +19,7 @@ export const Launcher = forwardRef<HTMLButtonElement, LauncherProps>(function La
   { open, controlsId, hasRecap, onToggle, onIntent },
   ref,
 ) {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   return (
     <motion.button
       ref={ref}

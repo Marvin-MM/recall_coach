@@ -1,11 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useId, useReducer, useRef, useState } from "react";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useMediaQuery, usePrefersReducedMotion } from "@/hooks/use-media-query";
 import { safeSession } from "@/lib/browser-storage";
 import type { MeDto } from "@/types/api";
 import { Launcher } from "./launcher";
@@ -29,7 +29,7 @@ const CoachPanelBody = dynamic(() => loadPanel().then((m) => m.CoachPanelBody), 
 });
 
 export function CoachWidget({ variant = "floating" }: { variant?: "floating" | "page" }) {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const isMobile = useMediaQuery("(max-width: 639px)");
   const [state, dispatch] = useReducer(widgetReducer, variant === "page", initialWidgetState);
   const [me, setMe] = useState<MeDto | null>(null);

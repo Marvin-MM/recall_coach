@@ -1,103 +1,161 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { ArrowRight, Boxes, Database, KeyRound, Network, Zap } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { openCoachWidget, prefetchCoachWidget } from "@/components/widget/widget-events";
 import { siteConfig } from "@/config/site";
-import { OpenCoachButton } from "./open-coach-button";
+import { usePrefersReducedMotion } from "@/hooks/use-media-query";
+import type { HealthDto } from "@/types/api";
+import { MemoryStack } from "./iso/memory-stack";
 
-const MARGIN_NOTES = [
-  {
-    kind: "Mistake",
-    when: "last Tuesday",
-    text: "Skipped the Result in a STAR answer about a missed deadline.",
-  },
-  {
-    kind: "Target",
-    when: "onboarding",
-    text: "Backend engineer, payments company, interview on the 15th.",
-  },
-  { kind: "Learns best", when: "onboarding", text: "Examples first, concise feedback." },
+const BUILT_ON = [
+  { name: "Walrus Memory", icon: Database },
+  { name: "Walrus", icon: Boxes },
+  { name: "Seal", icon: KeyRound },
+  { name: "Sui", icon: Network },
+  { name: "Qwen on Groq", icon: Zap },
 ];
 
-/**
- * The page's one orchestrated moment: margin notes are "pinned" beside a
- * coaching reply, one after another — memory as marginalia. Illustrative
- * content only (labelled as such).
- */
-function MemoryMargin() {
-  const reduce = useReducedMotion();
+function RelayerStatus() {
+  const [state, setState] = useState<"checking" | "ok" | "down">("checking");
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/health")
+      .then((r) => r.json() as Promise<HealthDto>)
+      .then((h) => !cancelled && setState(h.relayer === "ok" ? "ok" : "down"))
+      .catch(() => !cancelled && setState("down"));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   return (
-    <figure className="relative" aria-labelledby="hero-illustration-caption">
-      <div className="grid gap-4 md:grid-cols-[1fr_13rem] md:gap-0">
-        <div className="relative border border-border bg-card p-5 md:border-r-0">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0,transparent_27px,var(--border)_27px,var(--border)_28px)] bg-[position:0_20px] opacity-70"
-          />
-          <div className="relative space-y-7 text-sm leading-7">
-            <p className="text-muted-foreground">
-              <span className="font-medium text-foreground">You</span> — Let's practice. What should
-              I work on?
-            </p>
-            <p>
-              <span className="font-medium">Coach</span> — Last Tuesday you told a strong story
-              about the missed launch but stopped before the result. Let's fix that first: same
-              question, and this time end with the number. What changed because of what you did?
-            </p>
-          </div>
-        </div>
-        <ol
-          className="space-y-3 md:border md:border-border md:bg-background md:p-3"
-          aria-label="Notes the coach recalled"
-        >
-          {MARGIN_NOTES.map((note, i) => (
-            <motion.li
-              key={note.kind}
-              initial={reduce ? false : { opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: reduce ? 0 : 0.5 + i * 0.35, duration: 0.35, ease: "easeOut" }}
-              className="border-l-2 border-link bg-accent px-3 py-2 text-xs text-accent-foreground"
-            >
-              <p className="flex justify-between gap-2">
-                <span className="font-medium">{note.kind}</span>
-                <span className="font-mono text-[11px] opacity-80">{note.when}</span>
-              </p>
-              <p className="mt-0.5 leading-snug">{note.text}</p>
-            </motion.li>
-          ))}
-        </ol>
-      </div>
-      <figcaption id="hero-illustration-caption" className="mt-3 text-xs text-muted-foreground">
-        Illustration with example notes — not a real user. Real recalled notes link to their
-        encrypted blob on Walrus.
-      </figcaption>
-    </figure>
+    <span className="inline-flex items-center gap-2 border border-white/15 px-2.5 py-1 font-mono text-[11px] text-white/70">
+      Memory network
+      <span className="inline-flex items-center gap-1.5 text-white">
+        <span
+          aria-hidden
+          className={`size-1.5 ${state === "ok" ? "bg-[#97f0e5]" : state === "down" ? "bg-[#ff6b62]" : "animate-pulse bg-white/60"}`}
+        />
+        <span aria-live="polite">
+          {state === "ok" ? "Live on Mainnet" : state === "down" ? "Degraded" : "Checking"}
+        </span>
+      </span>
+    </span>
   );
 }
 
 export function Hero() {
+  const reduce = usePrefersReducedMotion();
+  // Always animate to visible: the server renders the entrance state, so a
+  // reduced-motion client must still resolve to opacity 1 (just without travel).
+  const fade = (delay: number) => ({
+    initial: { opacity: 0, y: reduce ? 0 : 14 },
+    animate: { opacity: 1, y: 0 },
+    transition: {
+      duration: reduce ? 0.01 : 0.6,
+      delay: reduce ? 0 : delay,
+      ease: [0.16, 1, 0.3, 1] as const,
+    },
+  });
+
   return (
-    <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:py-24">
-      <div className="space-y-6">
-        <h1 className="max-w-[16ch] text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-6xl">
-          {siteConfig.tagline}
-        </h1>
-        <p className="max-w-[58ch] text-lg leading-relaxed text-muted-foreground">
-          {siteConfig.description}
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <OpenCoachButton className="h-11 px-5 text-sm">Start practicing</OpenCoachButton>
-          <Button asChild variant="outline" className="h-11 px-5 text-sm">
-            <Link href="#before-after">See it remember</Link>
-          </Button>
+    <section
+      aria-labelledby="hero-title"
+      data-band="deep"
+      className="deep relative isolate overflow-hidden"
+    >
+      {/* Ocean glow + blueprint grid */}
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-[radial-gradient(120%_80%_at_85%_120%,#1d4ed8_0%,rgb(29_78_216/0.55)_30%,transparent_65%),radial-gradient(90%_70%_at_0%_110%,#2563eb_0%,transparent_60%),radial-gradient(60%_50%_at_70%_40%,rgb(77_162_255/0.18),transparent_70%)]"
+      />
+      <div
+        aria-hidden
+        className="blueprint-grid absolute inset-0 -z-10 [mask-image:radial-gradient(80%_70%_at_70%_40%,black,transparent)]"
+      />
+
+      <div className="mx-auto grid max-w-6xl items-center gap-6 px-4 pt-28 pb-10 sm:px-6 lg:min-h-[min(calc(100svh-7rem),760px)] lg:grid-cols-[1.05fr_1fr] lg:pt-28 lg:pb-6">
+        <div className="relative z-10 space-y-7">
+          <motion.div className="flex flex-wrap gap-2" {...fade(0)}>
+            <span className="inline-flex items-center border border-white/15 bg-white/5 px-2.5 py-1 font-mono text-[11px] text-white/80">
+              Seal-encrypted on Walrus
+            </span>
+            <RelayerStatus />
+          </motion.div>
+
+          <motion.h1
+            id="hero-title"
+            className="text-[2.5rem] leading-[1.04] font-semibold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[3.6rem] xl:text-[3.9rem]"
+            {...fade(0.08)}
+          >
+            <span className="block text-white/55">The interview coach</span>{" "}
+            <span className="block text-white">that remembers your last mistake.</span>
+          </motion.h1>
+
+          <motion.p
+            className="max-w-[52ch] text-base leading-relaxed text-white/70 sm:text-lg"
+            {...fade(0.16)}
+          >
+            {siteConfig.description}
+          </motion.p>
+
+          <motion.div className="flex flex-wrap items-center gap-3" {...fade(0.24)}>
+            <button
+              type="button"
+              onClick={() => openCoachWidget()}
+              onPointerEnter={() => prefetchCoachWidget()}
+              onFocus={() => prefetchCoachWidget()}
+              className="group inline-flex h-12 items-stretch border border-[#7cbcff]/50 bg-[linear-gradient(180deg,#7cbcff,#4da2ff)] text-sm font-medium text-[#0b0f14] shadow-[0_12px_40px_-12px_rgb(77_162_255/0.8)]"
+            >
+              <span className="flex items-center px-5">Start practicing</span>
+              <span className="flex w-12 items-center justify-center border-l border-[#0b0f14]/15 bg-[#1d4ed8] text-white transition-colors group-hover:bg-[#1e40af]">
+                <ArrowRight
+                  className="size-4 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden
+                />
+              </span>
+            </button>
+            <Link
+              href="#how-it-works"
+              className="inline-flex h-12 items-center px-4 text-sm text-white/75 underline-offset-4 hover:text-white hover:underline"
+            >
+              See how it remembers
+            </Link>
+          </motion.div>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Sign in with Google. <kbd className="font-mono">Ctrl</kbd>/
-          <kbd className="font-mono">⌘</kbd> + <kbd className="font-mono">K</kbd> opens the coach
-        </p>
+
+        <motion.figure
+          className="relative -mx-4 sm:mx-auto sm:w-full sm:max-w-md lg:max-w-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: reduce ? 0.01 : 1 }}
+        >
+          <MemoryStack />
+          <figcaption className="sr-only">
+            Illustration: memories flow from the coach into Walrus Memory, stored as encrypted blobs
+            on Walrus storage nodes.
+          </figcaption>
+        </motion.figure>
       </div>
-      <MemoryMargin />
+
+      <div className="relative mx-auto max-w-6xl px-4 pb-10 sm:px-6">
+        <p className="mb-4 font-mono text-[11px] tracking-[0.16em] text-white/55">
+          BUILT ON THE SUI STACK
+        </p>
+        <ul className="flex flex-wrap items-center gap-x-8 gap-y-4">
+          {BUILT_ON.map(({ name, icon: Icon }) => (
+            <li
+              key={name}
+              className="flex items-center gap-2 text-base font-medium tracking-tight text-white/80 sm:text-lg"
+            >
+              <Icon className="size-5 text-[#7cbcff]" aria-hidden />
+              {name}
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

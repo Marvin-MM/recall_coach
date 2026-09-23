@@ -1,8 +1,9 @@
 "use client";
 
 import { ChevronDown, CloudOff, History } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useId, useState } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-media-query";
 import type { MemoryDataPart } from "@/types/chat";
 import { BlobId } from "./blob-id";
 import { formatWhen, KIND_META } from "./kind-meta";
@@ -14,7 +15,7 @@ import { formatWhen, KIND_META } from "./kind-meta";
 export function MessageMemoryChips({ part }: { part: MemoryDataPart }) {
   const [open, setOpen] = useState(false);
   const listId = useId();
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
 
   if (part.amnesia) return null;
 

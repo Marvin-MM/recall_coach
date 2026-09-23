@@ -2,6 +2,7 @@
 
 import { BrainCircuit, EllipsisVertical, LogOut, Maximize2, X } from "lucide-react";
 import type { ReactNode, RefObject } from "react";
+import { LogoMark } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -37,6 +38,7 @@ export function PanelHeader({
 }: PanelHeaderProps) {
   return (
     <div className="flex items-center gap-2 border-b border-border bg-card px-3 py-2">
+      <LogoMark className="size-6" />
       <h2 id={titleId} ref={titleRef} tabIndex={-1} className="text-sm font-semibold outline-none">
         {siteConfig.name} <span className="font-normal text-muted-foreground">coach</span>
       </h2>

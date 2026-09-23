@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   const accountUrl = `${env.NEXT_PUBLIC_SUI_EXPLORER_OBJECT_URL}${env.MEMWAL_ACCOUNT_ID}`;
   return (
-    <article className="mx-auto max-w-[68ch] space-y-8 px-4 py-16 leading-relaxed sm:px-6">
+    <article className="mx-auto max-w-[68ch] space-y-8 px-4 pt-28 pb-16 leading-relaxed sm:px-6">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">Privacy and memory</h1>
         <p className="text-muted-foreground">

@@ -1,10 +1,11 @@
 "use client";
 
 import { Check, CloudUpload, TriangleAlert } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { coachLimits, RUBRIC_DIMENSIONS } from "@/config/coach";
+import { usePrefersReducedMotion } from "@/hooks/use-media-query";
 import { api } from "@/lib/api-client";
 import type { SessionDetailDto } from "@/types/api";
 import type { CoachUIMessage } from "@/types/chat";
@@ -72,7 +73,7 @@ export function SessionSummary({
   onOpenInspector,
 }: Props) {
   const { detail, timedOut, settled } = useSessionJobs(sessionId, memoryEnabled);
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
 
   const scores = useMemo(() => {
     const cards = messages
