@@ -1,3 +1,0 @@
-# False positive: a PUBLIC delegate key quoted inside a public GitHub issue body
-# (MystenLabs/MemWal), stored in bug-hunt/existing-issues.json for dedup.
-d768f32e28d33468b888bbe544cae81831b13e7e:bug-hunt/existing-issues.json:generic-api-key:131

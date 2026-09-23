@@ -41,7 +41,7 @@ listNamespaces(options?: { cursor?; limit? }): Promise<{ namespaces: { id; name;
 delegateKeyToSuiAddress(privateKeyHex: string): Promise<string>
 delegateKeyToPublicKey(privateKeyHex: string): Promise<Uint8Array>
 MemWalCompatibilityError, MemWalMock (test double with the same method shapes + forget()/clear())
-withMemWal(model: any, options: WithMemWalOptions): any          // from "@mysten-incubation/memwal/ai" — used only in bug-hunt probes
+withMemWal(model: any, options: WithMemWalOptions): any          // from "@mysten-incubation/memwal/ai" — not used in production (see below)
 ```
 
 Error shape (from `dist/memwal.js`): plain `Error` with numeric `status` (HTTP) and optional `serverCode` (e.g. `ERR_TIMESTAMP_OUT_OF_BOUNDS`); request deadline errors have `name = "MemWalRequestTimeout"`, `status = 504`; version mismatch throws `MemWalCompatibilityError`. Mapped in `src/server/memory/errors.ts`.
@@ -82,7 +82,7 @@ Verified directly against Groq (2026-09-22): `qwen/qwen3.8-27b` is listed for ou
 | `recall` on a namespace with no data | ≈0.9 s, empty result (indistinguishable from a typo'd namespace) |
 | remember → recall visibility | Run 1: recall immediately after `done` returned **0 results**; a later recall found it (distance 0.443). Run 2: visible 1.7 s after `done` |
 | Relevant-memory distance | 0.44–0.49 for a paraphrased query → `maxDistance: 0.65` for facts recall |
-| Hang | One fresh-client `recall` (no explicit `requestTimeoutMs`) produced no output for >3 min and was killed; re-running with `requestTimeoutMs: 30000` completed in ~10 s. Not reproduced since — tracked as `needs-human-verify` in `bug-hunt/FINDINGS.md` |
+| Hang | One fresh-client `recall` (no explicit `requestTimeoutMs`) produced no output for >3 min and was killed; re-running with `requestTimeoutMs: 30000` completed in ~10 s. Not reproduced since — tracked as needs-verification |
 
 Consequences in our code:
 - `MEMWAL_RECALL_TIMEOUT_MS` defaults to **6000** in `.env.example` (spec suggested 3000, which would degrade most turns); the profile snapshot is cached per warm instance to avoid one recall per turn.
@@ -98,6 +98,9 @@ Consequences in our code:
 5. **Timeouts** — see measurements above.
 6. **AI Elements** — `ai-elements@latest` has no `--help`; running it installs *all* components. We kept `conversation`, `message` (its `MessageResponse` replaces the old `response` component), `prompt-input`, `suggestion`, `shimmer` (replaces `loader`), and removed the heavy streamdown plugins (mermaid, math, cjk, code).
 
-## Bug-hunt cross-reference
+## Failure modes the app handles
 
-Everything above that behaves unexpectedly was probed and written up in [`bug-hunt/FINDINGS.md`](../bug-hunt/FINDINGS.md): all-dropped recalls (report 001), transient upstream 429 job failures (002), `withMemWal` auto-save on serverless (003), `waitForRememberJobs` namespace echo (004), intermittent `analyze` 500s (005), nonexistent `accountId` → 502 (006), docs discrepancies (007, 008, [`docs-diff.md`](../bug-hunt/docs-diff.md)) and the unenforceable `minSupportedSdk` (009).
+- All-dropped recall (`results: []`, `dropped_count > 0`) → treated as memory unavailable, not "no memories".
+- Transient upstream failures on accepted jobs → resubmitted, same metadata row re-pointed.
+- `withMemWal` auto-save is fire-and-forget → not used in production; persistence runs explicitly in `after()`.
+- `waitForRememberJobs` reports caller-supplied namespaces → bookkeeping keyed by the namespace we submitted.

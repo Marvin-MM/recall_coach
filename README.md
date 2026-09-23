@@ -134,11 +134,11 @@ E2E runs `next dev` with test-only drivers. Create `.env.e2e` from `.env.example
 
 - **No hard delete:** Walrus storage is immutable; “forget” can only hide a memory from the coach, not erase the blob.
 - **Recall is semantic, not exact:** the profile is chosen as the newest snapshot among a few candidates.
-- **Mainnet saves are slow** (35–82 s measured) and a job can report `done` slightly before it is recallable — see [docs/SDK_NOTES.md](docs/SDK_NOTES.md) and [bug-hunt/FINDINGS.md](bug-hunt/FINDINGS.md).
+- **Mainnet saves are slow** (35–82 s measured) and a job can report `done` slightly before it is recallable — see [docs/SDK_NOTES.md](docs/SDK_NOTES.md).
 
-## Walrus Memory bug hunt
+## Memory-layer behaviour
 
-Probe harness, findings and ready-to-file reports: [bug-hunt/](bug-hunt/README.md).
+Measured latencies, failure modes and how the app degrades around them are documented in [docs/SDK_NOTES.md](docs/SDK_NOTES.md).
 
 ## License
 

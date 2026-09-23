@@ -32,7 +32,7 @@ src/server/llm/          model factory, prompts, extraction
 src/server/chat/         chat-service (DI via createChatService(deps))
 src/types/               shared types (memory, api, chat)
 scripts/                 memwal-verify, memwal-stats, evidence-export
-bug-hunt/                probes + findings + reports
+bug-hunt/                LOCAL ONLY (gitignored): probes, findings, reports
 docs/                    architecture, SDK notes, article drafts, checklist
 tests/unit|integration|e2e
 ```

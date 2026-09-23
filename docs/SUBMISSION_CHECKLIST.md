@@ -12,7 +12,7 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 - [ ] ≥3 real users × ≥10 done blobs each — `TODO(human)` (see docs/USER_TEST_GUIDE.md; check with `pnpm memwal:stats` or `/admin/evidence`)
 - [x] Article draft ready — `docs/article/ARTICLE_DRAFT.md`; screenshots/transcripts are `TODO(human)` slots
 - [x] X post draft; promo post drafts — `docs/article/X_POST.md`, `docs/article/PROMO_POST.md`
-- [x] Bug reports in `bug-hunt/reports/` + `docs/article/FEEDBACK_FORM.md`
+- [x] Bug reports in `bug-hunt/reports/` + `docs/article/FEEDBACK_FORM.md` (both local only, gitignored)
 - [ ] Human-only items (below)
 
 ## Form fields and where each value comes from

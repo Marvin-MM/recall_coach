@@ -56,3 +56,7 @@ next-env.d.ts
 
 # evidence text exports (real memory text; never commit without written consent)
 /docs/evidence/export-*/text-*.json
+
+# Private working material — never pushed
+/bug-hunt/
+/docs/article/
