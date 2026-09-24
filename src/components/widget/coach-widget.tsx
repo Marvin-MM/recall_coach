@@ -7,10 +7,11 @@ import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "@/compone
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMediaQuery, usePrefersReducedMotion } from "@/hooks/use-media-query";
 import { safeSession } from "@/lib/browser-storage";
+import { safeNextPath } from "@/lib/safe-next";
 import type { MeDto } from "@/types/api";
 import { Launcher } from "./launcher";
 import { initialWidgetState, widgetReducer } from "./state";
-import { OPEN_WIDGET_EVENT, PREFETCH_WIDGET_EVENT } from "./widget-events";
+import { NEXT_KEY, OPEN_WIDGET_EVENT, PREFETCH_WIDGET_EVENT } from "./widget-events";
 
 const OPEN_KEY = "recall:widget:open";
 
@@ -48,6 +49,8 @@ export function CoachWidget({ variant = "floating" }: { variant?: "floating" | "
       url.searchParams.has("signin") ||
       url.searchParams.get("coach") === "open" ||
       safeSession.get(OPEN_KEY) === "1";
+    const next = safeNextPath(url.searchParams.get("next"));
+    if (next) safeSession.set(NEXT_KEY, next);
     if (url.searchParams.has("signin") || url.searchParams.has("coach")) {
       url.searchParams.delete("signin");
       url.searchParams.delete("coach");

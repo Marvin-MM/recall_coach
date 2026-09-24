@@ -138,7 +138,8 @@ E2E runs `next dev` with test-only drivers. Create `.env.e2e` from `.env.example
 3. Run migrations against production: `DATABASE_URL_UNPOOLED=<prod direct url> pnpm db:migrate`.
 4. Google Cloud Console: OAuth consent screen → publish to production; add `https://<domain>/api/auth/callback/google`.
 5. Smoke test: `/api/health` all ok → sign in → onboarding → send two messages, refresh (the thread reopens) → end the session and watch “Saving to Walrus” → History shows the transcript and memories → `pnpm memwal:stats` against the production DB.
-6. `vercel.json` schedules a daily cron (`/api/cron/health`) that logs relayer health, reconciles pending saves, counts stale jobs and ends sessions idle for more than 2 hours (metadata only).
+6. Health: point uptime monitors at `/api/health` (200 when the database and relayer are ok, 503 otherwise). The site's status badges use `/api/status` — same body, always 200 — and re-check once before showing “degraded”, so a cold start doesn't flash an error.
+7. `vercel.json` schedules a daily cron (`/api/cron/health`) that logs relayer health, reconciles pending saves, counts stale jobs and ends sessions idle for more than 2 hours (metadata only).
 
 ## Security model
 

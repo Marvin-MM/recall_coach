@@ -80,6 +80,9 @@ test.describe("widget: keyboard + signed out", () => {
     expect(await res.json()).toMatchObject({ error: { code: "UNAUTHORIZED" } });
     await page.goto("/coach");
     await expect(page).toHaveURL(/\/($|\?)/);
+    // There is no separate admin login: /admin and /admin/login lead to sign-in, then the evidence page.
+    await page.goto("/admin/login");
+    await expect(page).toHaveURL(/next=%2Fadmin%2Fevidence/);
     await expect(page.getByRole("dialog", { name: /Recall/ })).toBeVisible();
   });
 });

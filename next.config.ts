@@ -24,6 +24,14 @@ const nextConfig: NextConfig = {
     "pg",
     "ws",
   ],
+  // There is no separate admin login: admins sign in with Google like everyone
+  // else, and /admin/evidence checks ADMIN_EMAILS server-side.
+  async redirects() {
+    return [
+      { source: "/admin", destination: "/admin/evidence", permanent: false },
+      { source: "/admin/login", destination: "/admin/evidence", permanent: false },
+    ];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -712,6 +712,55 @@ describe("admin evidence + health", () => {
       memory: () => memory,
       modelId: "m",
     });
-    expect((await down()).status).toBe(503);
+    const r503 = await down();
+    expect(r503.status).toBe(503);
+    expect(r503.headers.get("Cache-Control")).toBe("no-store");
+    expect(res.headers.get("Cache-Control")).toBe("public, max-age=15");
+  });
+
+  it("status mode answers 200 with the same body, so UI badges don't log failed requests", async () => {
+    const down = createHealthHandler({
+      pingDb: async () => false,
+      memory: () => memory,
+      modelId: "m",
+    });
+    const res = await down("status");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ db: "down", relayer: "ok" });
+  });
+
+  it("retries a failed probe once (cold start) and shares one in-flight probe", async () => {
+    let pings = 0;
+    const flaky = createHealthHandler({
+      pingDb: async () => ++pings > 1, // first connection fails, retry succeeds
+      memory: () => memory,
+      modelId: "m",
+    });
+    const [a, b] = await Promise.all([flaky(), flaky("status")]);
+    expect([a.status, b.status]).toEqual([200, 200]);
+    expect(pings).toBe(2); // one probe (+1 retry) for two concurrent requests
+    expect((await a.json()).db).toBe("ok");
+  });
+
+  it("caches a degraded answer only briefly, then probes again", async () => {
+    let clock = 1_000_000;
+    let dbUp = false;
+    let pings = 0;
+    const h = createHealthHandler({
+      pingDb: async () => {
+        pings++;
+        return dbUp;
+      },
+      memory: () => memory,
+      modelId: "m",
+      now: () => clock,
+    });
+    expect((await h()).status).toBe(503);
+    const afterFirst = pings;
+    dbUp = true;
+    expect((await h()).status).toBe(503); // within the 3 s degraded window: reused
+    expect(pings).toBe(afterFirst);
+    clock += 3_100;
+    expect((await h()).status).toBe(200); // re-probed after the short window
   });
 });

@@ -3,7 +3,7 @@ import { healthHandler } from "@/server/health-instance";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Uptime monitors: 200 when DB + relayer are ok, 503 otherwise. */
+/** UI status badges: same body as /api/health, always 200 (the UI shows "degraded" itself). */
 export function GET(): Promise<Response> {
-  return healthHandler()("monitor");
+  return healthHandler()("status");
 }

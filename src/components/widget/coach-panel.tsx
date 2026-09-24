@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError, api } from "@/lib/api-client";
 import { authClient } from "@/lib/auth-client";
+import { safeSession } from "@/lib/browser-storage";
+import { safeNextPath } from "@/lib/safe-next";
 import type { MeDto, SessionDto } from "@/types/api";
 import type { CoachUIMessage } from "@/types/chat";
 import type { CoachingMode } from "@/types/domain";
@@ -20,6 +22,7 @@ import { SessionDetail } from "./session-detail";
 import { SessionSummary } from "./session-summary";
 import { SignInCard } from "./sign-in-card";
 import type { RecapSeed, WidgetAction, WidgetState } from "./state";
+import { NEXT_KEY } from "./widget-events";
 
 const seedOf = (s: Pick<SessionDto, "id" | "mode" | "memoryEnabled" | "title">) => ({
   sessionId: s.id,
@@ -84,6 +87,7 @@ export function CoachPanelBody({
         return;
       }
       identify(res);
+      safeSession.remove(NEXT_KEY);
       // Reopen an unfinished session (≤ 2 h idle) with its transcript — only
       // when history is on; otherwise nothing is restored and home is shown.
       if (res.onboarded && res.saveTranscripts) {
@@ -155,7 +159,9 @@ export function CoachPanelBody({
   const view = state.view;
   const memoryState =
     view.name === "chat" || view.name === "summary" ? (view.memoryEnabled ? "on" : "off") : null;
-  const callbackPath = variant === "page" ? "/coach" : "/?coach=open";
+  // Return to the protected page the visitor asked for (?next=), else back to the coach.
+  const callbackPath =
+    safeNextPath(safeSession.get(NEXT_KEY)) ?? (variant === "page" ? "/coach" : "/?coach=open");
   const openInspector = () => dispatch({ type: "inspector", open: true });
   const saveTranscripts = me?.saveTranscripts ?? true;
 

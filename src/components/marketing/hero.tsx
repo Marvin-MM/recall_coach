@@ -3,11 +3,10 @@
 import { ArrowRight, Boxes, Database, KeyRound, Network, Zap } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { openCoachWidget, prefetchCoachWidget } from "@/components/widget/widget-events";
 import { siteConfig } from "@/config/site";
 import { usePrefersReducedMotion } from "@/hooks/use-media-query";
-import type { HealthDto } from "@/types/api";
+import { useSystemHealth } from "@/hooks/use-system-health";
 import { MemoryStack } from "./iso/memory-stack";
 
 const BUILT_ON = [
@@ -18,29 +17,32 @@ const BUILT_ON = [
   { name: "Qwen on Groq", icon: Zap },
 ];
 
+/** The memory network (Walrus Memory relayer) only — a DB blip doesn't make the network "degraded". */
 function RelayerStatus() {
-  const [state, setState] = useState<"checking" | "ok" | "down">("checking");
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/health")
-      .then((r) => r.json() as Promise<HealthDto>)
-      .then((h) => !cancelled && setState(h.relayer === "ok" ? "ok" : "down"))
-      .catch(() => !cancelled && setState("down"));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const health = useSystemHealth();
+  const state =
+    health.status === "checking"
+      ? "checking"
+      : health.status === "unreachable"
+        ? "unknown"
+        : health.health.relayer === "ok"
+          ? "ok"
+          : "down";
+  const label = {
+    ok: "Live on Mainnet",
+    down: "Degraded",
+    unknown: "Status unavailable",
+    checking: "Checking",
+  }[state];
   return (
     <span className="inline-flex items-center gap-2 border border-white/15 px-2.5 py-1 font-mono text-[11px] text-white/70">
       Memory network
       <span className="inline-flex items-center gap-1.5 text-white">
         <span
           aria-hidden
-          className={`size-1.5 ${state === "ok" ? "bg-[#97f0e5]" : state === "down" ? "bg-[#ff6b62]" : "animate-pulse bg-white/60"}`}
+          className={`size-1.5 ${state === "ok" ? "bg-[#97f0e5]" : state === "down" ? "bg-[#ff6b62]" : state === "unknown" ? "bg-white/40" : "animate-pulse bg-white/60"}`}
         />
-        <span aria-live="polite">
-          {state === "ok" ? "Live on Mainnet" : state === "down" ? "Degraded" : "Checking"}
-        </span>
+        <span aria-live="polite">{label}</span>
       </span>
     </span>
   );

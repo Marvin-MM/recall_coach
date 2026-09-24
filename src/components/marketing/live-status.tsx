@@ -1,23 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { HealthDto } from "@/types/api";
+import { useSystemHealth } from "@/hooks/use-system-health";
 
-/** Live /api/health readout (DB, Walrus relayer, model). */
+/** Live status readout (DB, Walrus relayer, model), shared with the hero badge. */
 export function LiveStatus() {
-  const [health, setHealth] = useState<HealthDto | null>(null);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/health")
-      .then((r) => r.json() as Promise<HealthDto>)
-      .then((h) => !cancelled && setHealth(h))
-      .catch(() => !cancelled && setFailed(true));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const system = useSystemHealth();
+  const failed = system.status === "unreachable";
+  const health = system.status === "ok" || system.status === "degraded" ? system.health : null;
 
   const dot = (ok: boolean) => (
     <span aria-hidden className={`inline-block size-2 ${ok ? "bg-link" : "bg-destructive"}`} />

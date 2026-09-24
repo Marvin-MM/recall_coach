@@ -58,7 +58,8 @@ export async function closeDb(): Promise<void> {
   await holder?.end();
 }
 
-export async function pingDb(timeoutMs = 2000): Promise<boolean> {
+/** First connections (cold dev server, serverless cold start) can take a few seconds. */
+export async function pingDb(timeoutMs = 4000): Promise<boolean> {
   try {
     await withTimeout(getDb().execute(sql`select 1`), timeoutMs, "db.ping");
     return true;

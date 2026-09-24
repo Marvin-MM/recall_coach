@@ -13,3 +13,6 @@ export const PREFETCH_WIDGET_EVENT = "recall:prefetch-widget";
 export function prefetchCoachWidget(): void {
   window.dispatchEvent(new CustomEvent(PREFETCH_WIDGET_EVENT));
 }
+
+/** sessionStorage key: where to land after Google sign-in (e.g. /admin/evidence), set from `?next=`. */
+export const NEXT_KEY = "recall:signin:next";
