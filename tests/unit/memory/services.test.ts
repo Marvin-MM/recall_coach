@@ -21,6 +21,7 @@ function fakeRepo() {
     { status: string; blobId?: string; errorCode?: string; kind: string; createdAt: Date }
   >();
   const repo: MemoryEventsRepo = {
+    listForSession: vi.fn(async () => []),
     recordAcceptedJobs: vi.fn(async (jobs) => {
       for (const j of jobs)
         rows.set(j.jobId, { status: "pending", kind: j.kind, createdAt: new Date(0) });

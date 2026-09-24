@@ -9,73 +9,64 @@ import { COACHING_MODES } from "@/types/domain";
 
 /* ---------- Chat ---------- */
 
-const textPart = z.object({
-  type: z.literal("text"),
-  text: z
-    .string()
-    .max(
-      coachLimits.maxTextPartChars,
-      `Text parts are limited to ${coachLimits.maxTextPartChars} characters`,
-    ),
-  state: z.enum(["streaming", "done"]).optional(),
+const chatText = z
+  .string()
+  .max(
+    coachLimits.maxTextPartChars,
+    `Messages are limited to ${coachLimits.maxTextPartChars} characters`,
+  )
+  .refine((v) => v.trim().length > 0, { message: "Message text is required" });
+
+/** One message of the page's own thread (history off only). */
+export const clientHistoryMessageSchema = z.strictObject({
+  role: z.enum(["user", "assistant"]),
+  text: chatText,
 });
+export type ClientHistoryMessage = z.infer<typeof clientHistoryMessageSchema>;
 
-/** Non-text parts the client may echo back (data/step/reasoning); ignored by the server. */
-const PASSTHROUGH_PART = /^(data-[a-z-]+|step-start|reasoning|source-url|source-document|file)$/;
-
-const messagePart = z
-  .object({ type: z.string().max(40) })
-  .loose()
-  .superRefine((part, ctx) => {
-    if (part.type === "text") {
-      const parsed = textPart.safeParse(part);
-      if (!parsed.success) {
-        for (const issue of parsed.error.issues) {
-          ctx.addIssue({ code: "custom", path: issue.path, message: issue.message });
-        }
-      }
-    } else if (!PASSTHROUGH_PART.test(part.type)) {
+/**
+ * POST /api/chat.
+ * - History on:  `{ sessionId, message, expectedSeq }` — the server stores the
+ *   turn and rebuilds the thread from this session's encrypted transcript.
+ * - History off: `{ sessionId, message, history }` — `history` is the current
+ *   page's messages only (≤ 24), used for this request and discarded. With the
+ *   new message appended, roles must alternate and end with the user.
+ */
+export const chatRequestSchema = z
+  .strictObject({
+    sessionId: z.uuid(),
+    message: chatText,
+    expectedSeq: z.int().min(0).max(1_000_000).optional(),
+    history: z
+      .array(clientHistoryMessageSchema)
+      .max(
+        coachLimits.maxClientHistory,
+        `At most ${coachLimits.maxClientHistory} history messages per request`,
+      )
+      .optional(),
+  })
+  .superRefine((body, ctx) => {
+    const hasSeq = body.expectedSeq !== undefined;
+    const hasHistory = body.history !== undefined;
+    if (hasSeq === hasHistory) {
       ctx.addIssue({
         code: "custom",
-        path: ["type"],
-        message: `Unsupported part type "${part.type}"`,
+        path: [],
+        message: "Send exactly one of expectedSeq (history on) or history (history off)",
+      });
+    }
+    if (!body.history) return;
+    const thread = [...body.history.map((m) => m.role), "user"];
+    const alternates = thread.every((role, i) => role === (i % 2 === 0 ? "user" : "assistant"));
+    if (!alternates || thread.length % 2 === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["history"],
+        message:
+          "history must alternate user/assistant, start with the user and end with a reply, so the new message is the last user turn",
       });
     }
   });
-
-const uiMessage = z.object({
-  id: z.string().min(1).max(100),
-  role: z.enum(["user", "assistant"]),
-  parts: z.array(messagePart).max(50),
-  metadata: z.unknown().optional(),
-});
-
-export const chatRequestSchema = z.object({
-  sessionId: z.uuid(),
-  messages: z
-    .array(uiMessage)
-    .min(1)
-    .max(coachLimits.maxMessages, `At most ${coachLimits.maxMessages} messages per request`)
-    .refine((msgs) => msgs.at(-1)?.role === "user", {
-      message: "The last message must be from the user",
-    })
-    .refine(
-      (msgs) => {
-        const last = msgs.at(-1);
-        return (
-          !!last &&
-          last.parts.some(
-            (p) =>
-              p.type === "text" &&
-              "text" in p &&
-              typeof p.text === "string" &&
-              p.text.trim().length > 0,
-          )
-        );
-      },
-      { message: "The last message must contain text" },
-    ),
-});
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
 
 /* ---------- Sessions ---------- */
@@ -93,6 +84,9 @@ export const patchSessionSchema = z.discriminatedUnion("action", [
 export type PatchSessionInput = z.infer<typeof patchSessionSchema>;
 
 export const sessionIdSchema = z.uuid();
+
+export const patchSettingsSchema = z.strictObject({ saveTranscripts: z.boolean() });
+export type PatchSettingsInput = z.infer<typeof patchSettingsSchema>;
 
 /* ---------- Onboarding ---------- */
 

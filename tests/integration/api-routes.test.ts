@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { UnauthorizedError } from "@/lib/errors";
 import { TtlCache } from "@/lib/ttl-cache";
@@ -7,6 +8,7 @@ import { createMeHandler } from "@/server/api/me";
 import { createMemoryInspectorHandler } from "@/server/api/memory-inspector";
 import { createOnboardingHandler } from "@/server/api/onboarding";
 import { createSessionsHandlers } from "@/server/api/sessions";
+import { createSettingsHandlers } from "@/server/api/settings";
 import type { AuthUser } from "@/server/auth/session";
 import { createCoachingSessionsRepo } from "@/server/db/repositories/coaching-sessions.repo";
 import { createEvidenceRepo } from "@/server/db/repositories/evidence.repo";
@@ -14,11 +16,20 @@ import { createMemoryEventsRepo } from "@/server/db/repositories/memory-events.r
 import { createUserSettingsRepo } from "@/server/db/repositories/user-settings.repo";
 import * as schema from "@/server/db/schema";
 import { createFakeMemory, type FakeMemoryPort } from "@/server/memory/fake-memory";
-import { decodeMemory } from "@/server/memory/memory-format";
+import { decodeMemory, encodeFact, encodeProfile } from "@/server/memory/memory-format";
 import { deriveNamespaces } from "@/server/memory/namespace";
-import type { MemoryInspectorDto, SessionDetailDto, SessionDto } from "@/types/api";
+import { createTranscriptStore } from "@/server/transcripts/transcript-store";
+import type {
+  ActiveSessionDto,
+  MemoryInspectorDto,
+  SessionDetailDto,
+  SessionDto,
+  SessionMemoriesDto,
+  SessionMessagesDto,
+} from "@/types/api";
 import type { RecalledMemory } from "@/types/memory";
 import { createTestDb, insertUser, type TestDb } from "../support/pglite";
+import { testKeyring } from "../support/transcripts";
 
 let t: TestDb;
 let alice: AuthUser;
@@ -51,15 +62,62 @@ const json = (body: unknown, method = "POST") => ({
   body: JSON.stringify(body),
 });
 
-function sessionsApi(user: AuthUser | null) {
+function sessionsApi(user: AuthUser | null, now = () => new Date("2026-09-22T08:00:00Z")) {
   return createSessionsHandlers({
     requireUser: as(user),
     rateLimit: noLimit,
     sessions: createCoachingSessionsRepo(t.db),
     memoryEvents: createMemoryEventsRepo(t.db),
+    userSettings: createUserSettingsRepo(t.db),
+    transcripts: createTranscriptStore(t.db, testKeyring),
     memory: () => memory,
-    now: () => new Date("2026-09-22T08:00:00Z"),
+    namespacePrefix: PREFIX,
+    explorerBlobUrl: "https://walruscan.test/blob/",
+    now,
   });
+}
+
+const store = () => createTranscriptStore(t.db, testKeyring);
+
+async function sessionWithTranscript(user: AuthUser, memoryEnabled = true) {
+  const s = await createCoachingSessionsRepo(t.db).createSession({
+    userId: user.id,
+    mode: "mock_interview",
+    memoryEnabled,
+    title: "Mock interview · 22 Sep",
+  });
+  const now = new Date();
+  const turn = await store().beginTurn({
+    userId: user.id,
+    sessionId: s.id,
+    text: "Tell me what to practise",
+    expectedSeq: 0,
+    now,
+  });
+  await store().appendAssistant({
+    userId: user.id,
+    sessionId: s.id,
+    seq: (turn.userSeq ?? 0) + 1,
+    text: "**Let's start** with a STAR question.",
+    status: "ok",
+    now,
+  });
+  await store().beginTurn({
+    userId: user.id,
+    sessionId: s.id,
+    text: "Second try",
+    expectedSeq: 2,
+    now,
+  });
+  await store().appendAssistant({
+    userId: user.id,
+    sessionId: s.id,
+    seq: 3,
+    text: "",
+    status: "failed",
+    now,
+  });
+  return s;
 }
 
 describe("sessions API", () => {
@@ -150,6 +208,272 @@ describe("sessions API", () => {
 
   it("401 without a session", async () => {
     expect((await sessionsApi(null).list(req("/api/sessions"))).status).toBe(401);
+  });
+});
+
+describe("session history API", () => {
+  it("GET messages: owner only (404 otherwise), decrypted, ordered, failed rows flagged, nextSeq", async () => {
+    const s = await sessionWithTranscript(alice);
+    const res = await sessionsApi(alice).messages(req(`/api/sessions/${s.id}/messages`), s.id);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as SessionMessagesDto;
+    expect(body.nextSeq).toBe(4);
+    expect(body.ended).toBe(false);
+    expect(body.messages.map((m) => [m.seq, m.role, m.status, m.text])).toEqual([
+      [0, "user", "ok", "Tell me what to practise"],
+      [1, "assistant", "ok", "**Let's start** with a STAR question."],
+      [2, "user", "ok", "Second try"],
+      [3, "assistant", "failed", ""],
+    ]);
+    expect((await sessionsApi(bob).messages(req("/x"), s.id)).status).toBe(404);
+    expect((await sessionsApi(alice).messages(req("/x"), "not-a-uuid")).status).toBe(400);
+    expect((await sessionsApi(null).messages(req("/x"), s.id)).status).toBe(401);
+  });
+
+  it("a row tampered with in the database is reported as unreadable, not shown", async () => {
+    const s = await sessionWithTranscript(alice);
+    await t.db
+      .update(schema.sessionMessages)
+      .set({ ciphertext: new Uint8Array([1, 2, 3, 4]) })
+      .where(eq(schema.sessionMessages.seq, 0));
+    const body = (await (
+      await sessionsApi(alice).messages(req("/x"), s.id)
+    ).json()) as SessionMessagesDto;
+    expect(body.messages[0]).toMatchObject({ status: "unreadable", text: "" });
+    expect(body.messages[1]?.status).toBe("ok");
+  });
+
+  it("DELETE messages and DELETE /api/me/transcripts remove transcripts but never memories", async () => {
+    const s1 = await sessionWithTranscript(alice);
+    const s2 = await sessionWithTranscript(alice);
+    const bobs = await sessionWithTranscript(bob);
+    await createMemoryEventsRepo(t.db).recordAcceptedJobs([
+      { userId: alice.id, coachingSessionId: s1.id, namespace: "n", kind: "goal", jobId: "job-1" },
+    ]);
+
+    expect((await sessionsApi(bob).deleteMessages(req("/x"), s1.id)).status).toBe(404);
+    const one = await sessionsApi(alice).deleteMessages(req("/x", { method: "DELETE" }), s1.id);
+    expect(await one.json()).toEqual({ deleted: 4 });
+    expect((await store().listForSession({ userId: alice.id, sessionId: s1.id })).messages).toEqual(
+      [],
+    );
+
+    const settings = createSettingsHandlers({
+      requireUser: as(alice),
+      rateLimit: noLimit,
+      userSettings: createUserSettingsRepo(t.db),
+      transcripts: store(),
+    });
+    const all = await settings.deleteAllTranscripts(
+      req("/api/me/transcripts", { method: "DELETE" }),
+    );
+    expect(await all.json()).toEqual({ deleted: 4 });
+    expect((await store().listForSession({ userId: alice.id, sessionId: s2.id })).messages).toEqual(
+      [],
+    );
+    // Other users' transcripts and all memory metadata are untouched.
+    expect(
+      (await store().listForSession({ userId: bob.id, sessionId: bobs.id })).messages,
+    ).toHaveLength(4);
+    expect(await t.db.select().from(schema.memoryEvents)).toHaveLength(1);
+  });
+
+  it("PATCH /api/me/settings toggles saveTranscripts (strict body); /api/me reports it", async () => {
+    const settings = createSettingsHandlers({
+      requireUser: as(alice),
+      rateLimit: noLimit,
+      userSettings: createUserSettingsRepo(t.db),
+      transcripts: store(),
+    });
+    const off = await settings.patch(
+      req("/api/me/settings", json({ saveTranscripts: false }, "PATCH")),
+    );
+    expect(await off.json()).toEqual({ saveTranscripts: false });
+    expect((await settings.patch(req("/x", json({ saveTranscripts: "no" }, "PATCH")))).status).toBe(
+      400,
+    );
+    expect(
+      (await settings.patch(req("/x", json({ saveTranscripts: true, admin: true }, "PATCH"))))
+        .status,
+    ).toBe(400);
+    const me = createMeHandler({
+      getOptionalUser: async () => alice,
+      userSettings: createUserSettingsRepo(t.db),
+      memoryEvents: createMemoryEventsRepo(t.db),
+      adminEmails: [],
+    });
+    expect(await (await me(req("/api/me"))).json()).toMatchObject({ saveTranscripts: false });
+    expect(
+      (
+        await createSettingsHandlers({
+          requireUser: as(null),
+          rateLimit: noLimit,
+          userSettings: createUserSettingsRepo(t.db),
+          transcripts: store(),
+        }).patch(req("/x", json({ saveTranscripts: true }, "PATCH")))
+      ).status,
+    ).toBe(401);
+  });
+
+  it("GET active returns the latest open session active in the last 2 hours; idle ones are ended", async () => {
+    const recent = await sessionWithTranscript(alice);
+    const stale = await createCoachingSessionsRepo(t.db).createSession({
+      userId: alice.id,
+      mode: "drill",
+      memoryEnabled: true,
+      title: "Drill · 22 Sep",
+    });
+    await t.db
+      .update(schema.coachingSessions)
+      .set({ lastActivityAt: new Date(Date.now() - 3 * 60 * 60 * 1000) })
+      .where(eq(schema.coachingSessions.id, stale.id));
+
+    const realNow = () => new Date();
+    const res = (await (
+      await sessionsApi(alice, realNow).active(req("/api/sessions/active"))
+    ).json()) as ActiveSessionDto;
+    expect(res.session?.id).toBe(recent.id);
+    const [staleRow] = await t.db
+      .select()
+      .from(schema.coachingSessions)
+      .where(eq(schema.coachingSessions.id, stale.id));
+    expect(staleRow?.endedAt).toBeInstanceOf(Date);
+
+    // Two hours later, the recent one is idle too: auto-ended on list load, so nothing is active.
+    const later = () => new Date(Date.now() + 2 * 60 * 60 * 1000 + 60_000);
+    const list = (await (await sessionsApi(alice, later).list(req("/api/sessions"))).json()) as {
+      sessions: SessionDto[];
+    };
+    expect(list.sessions.every((s) => s.endedAt !== null)).toBe(true);
+    expect(
+      ((await (await sessionsApi(alice, later).active(req("/x"))).json()) as ActiveSessionDto)
+        .session,
+    ).toBeNull();
+    // Another user's sessions are never returned.
+    expect(
+      ((await (await sessionsApi(bob, realNow).active(req("/x"))).json()) as ActiveSessionDto)
+        .session,
+    ).toBeNull();
+  });
+
+  it("the daily cron ends idle sessions for every user", async () => {
+    const { createCronHealthHandler } = await import("@/server/api/cron");
+    const a = await sessionWithTranscript(alice);
+    const b = await sessionWithTranscript(bob);
+    await t.db
+      .update(schema.coachingSessions)
+      .set({ lastActivityAt: new Date(Date.now() - 3 * 60 * 60 * 1000) });
+    const cron = createCronHealthHandler({
+      cronSecret: "cron-secret-for-tests",
+      memory: () => memory,
+      memoryEvents: createMemoryEventsRepo(t.db),
+      sessions: createCoachingSessionsRepo(t.db),
+    });
+    const res = await cron(
+      req("/api/cron/health", { headers: { authorization: "Bearer cron-secret-for-tests" } }),
+    );
+    expect(await res.json()).toMatchObject({ idleSessionsEnded: 2 });
+    const rows = await t.db.select().from(schema.coachingSessions);
+    expect(rows.filter((r) => [a.id, b.id].includes(r.id)).every((r) => r.endedAt)).toBe(true);
+  });
+
+  it("GET memories: this session's rows with texts recalled from Walrus, 'X of Y' when recall misses one", async () => {
+    const s = await sessionWithTranscript(alice);
+    const other = await sessionWithTranscript(alice);
+    const ns = deriveNamespaces(alice.id, 1, PREFIX);
+    const at = new Date("2026-09-22T10:00:00Z");
+    const mistake = encodeFact({
+      kind: "mistake",
+      text: "The user skipped the Result in a STAR answer.",
+      at,
+      sessionId: s.id,
+    });
+    const goal = encodeFact({
+      kind: "goal",
+      text: "The user wants to practise system design next.",
+      at,
+      sessionId: s.id,
+    });
+    const elsewhere = encodeFact({
+      kind: "strength",
+      text: "The user explained trade-offs clearly.",
+      at,
+      sessionId: other.id,
+    });
+    const profile = encodeProfile({
+      profile: { targetRole: "Backend Engineer", company: "Stripe" },
+      at,
+    });
+    const facts = await memory.rememberMany({
+      namespace: ns.facts,
+      texts: [mistake, goal, elsewhere],
+    });
+    const prof = await memory.rememberMany({ namespace: ns.profile, texts: [profile] });
+    const events = createMemoryEventsRepo(t.db);
+    const rows = [
+      { o: facts[0], kind: "mistake" as const, session: s.id, namespace: ns.facts },
+      { o: facts[1], kind: "goal" as const, session: s.id, namespace: ns.facts },
+      { o: facts[2], kind: "strength" as const, session: other.id, namespace: ns.facts },
+      { o: prof[0], kind: "profile" as const, session: s.id, namespace: ns.profile },
+    ];
+    await events.recordAcceptedJobs(
+      rows.map((r) => ({
+        userId: alice.id,
+        coachingSessionId: r.session,
+        namespace: r.namespace,
+        kind: r.kind,
+        jobId: r.o?.jobId ?? "",
+      })),
+    );
+    await events.markJobsDone(
+      rows.map((r) => ({
+        jobId: r.o?.jobId ?? "",
+        blobId: r.o?.ok ? r.o.blobId : "",
+        latencyMs: 1,
+      })),
+    );
+    // A fourth memory for this session whose blob recall doesn't return (e.g. dropped).
+    await events.recordAcceptedJobs([
+      {
+        userId: alice.id,
+        coachingSessionId: s.id,
+        namespace: ns.facts,
+        kind: "strength",
+        jobId: "lost-job",
+      },
+    ]);
+    await events.markJobsDone([{ jobId: "lost-job", blobId: "blob-not-recalled", latencyMs: 1 }]);
+
+    const res = await sessionsApi(alice).memories(req(`/api/sessions/${s.id}/memories`), s.id);
+    const body = (await res.json()) as SessionMemoriesDto;
+    expect(body).toMatchObject({ memoryEnabled: true, expected: 4, retrieved: 3, degraded: false });
+    const texts = body.items.map((i) => i.text);
+    expect(texts).toContain("The user skipped the Result in a STAR answer.");
+    expect(texts).toContain("The user wants to practise system design next.");
+    expect(texts).toContain("Profile updated: Preparing for Backend Engineer at Stripe");
+    expect(texts).not.toContain("The user explained trade-offs clearly.");
+    expect(body.items.find((i) => i.blobId === "blob-not-recalled")?.text).toBeNull();
+    expect(body.items.every((i) => i.explorerUrl?.startsWith("https://walruscan.test/blob/"))).toBe(
+      true,
+    );
+    expect(memory.calls.recall.every((c) => c.limit <= 50)).toBe(true);
+    expect((await sessionsApi(bob).memories(req("/x"), s.id)).status).toBe(404);
+  });
+
+  it("GET memories for an Amnesia session: nothing saved, no recall", async () => {
+    const s = await sessionWithTranscript(alice, false);
+    const before = memory.calls.recall.length;
+    const body = (await (
+      await sessionsApi(alice).memories(req("/x"), s.id)
+    ).json()) as SessionMemoriesDto;
+    expect(body).toEqual({
+      items: [],
+      retrieved: 0,
+      expected: 0,
+      memoryEnabled: false,
+      degraded: false,
+    });
+    expect(memory.calls.recall.length).toBe(before);
   });
 });
 

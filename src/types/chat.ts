@@ -27,6 +27,11 @@ export interface CoachMessageMetadata {
   createdAt?: number;
   model?: string;
   sessionId?: string;
+  /** History on: the seq to send as `expectedSeq` on the next turn. */
+  nextSeq?: number;
+  /** Restored transcript rows: stored position and status. */
+  seq?: number;
+  status?: "ok" | "failed" | "unreadable";
 }
 
 export type CoachUIMessage = UIMessage<CoachMessageMetadata, CoachDataParts>;

@@ -30,6 +30,7 @@ export function toSessionBase(row: CoachingSessionRow) {
     memoryEnabled: row.memoryEnabled,
     turnCount: row.turnCount,
     createdAt: row.createdAt.toISOString(),
+    lastActivityAt: row.lastActivityAt.toISOString(),
     endedAt: row.endedAt?.toISOString() ?? null,
   };
 }

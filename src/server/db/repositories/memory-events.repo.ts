@@ -25,6 +25,15 @@ export interface FailedJob {
 
 export type JobCounts = Record<MemoryStatus, number>;
 
+export interface SessionMemoryEvent {
+  kind: MemoryKind;
+  status: MemoryStatus;
+  blobId: string | null;
+  namespace: string;
+  createdAt: Date;
+  completedAt: Date | null;
+}
+
 export interface MemoryEventsRepo {
   /** All rows or none (single transaction). */
   recordAcceptedJobs(jobs: readonly AcceptedJob[]): Promise<void>;
@@ -39,6 +48,8 @@ export interface MemoryEventsRepo {
   /** Re-point a row to a resubmitted job (transient relayer failure retry). */
   replaceJob(oldJobId: string, newJobId: string): Promise<void>;
   countDoneBlobsByUser(userId: string): Promise<number>;
+  /** A session's memory rows (metadata only), oldest first. */
+  listForSession(userId: string, coachingSessionId: string): Promise<SessionMemoryEvent[]>;
   countJobsForSession(userId: string, coachingSessionId: string): Promise<JobCounts>;
   /** Pending jobs older than `olderThan` (for the cron health log). */
   countStalePending(olderThan: Date): Promise<number>;
@@ -159,6 +170,26 @@ export function createMemoryEventsRepo(db: Queryable): MemoryEventsRepo {
         .from(memoryEvents)
         .where(and(eq(memoryEvents.userId, userId), eq(memoryEvents.status, "done")));
       return rows[0]?.count ?? 0;
+    },
+
+    async listForSession(userId, coachingSessionId) {
+      return db
+        .select({
+          kind: memoryEvents.kind,
+          status: memoryEvents.status,
+          blobId: memoryEvents.blobId,
+          namespace: memoryEvents.namespace,
+          createdAt: memoryEvents.createdAt,
+          completedAt: memoryEvents.completedAt,
+        })
+        .from(memoryEvents)
+        .where(
+          and(
+            eq(memoryEvents.userId, userId),
+            eq(memoryEvents.coachingSessionId, coachingSessionId),
+          ),
+        )
+        .orderBy(asc(memoryEvents.createdAt));
     },
 
     async countJobsForSession(userId, coachingSessionId) {

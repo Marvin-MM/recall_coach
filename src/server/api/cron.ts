@@ -1,5 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
+import { coachLimits } from "@/config/coach";
 import { log } from "@/lib/log";
+import type { CoachingSessionsRepo } from "@/server/db/repositories/coaching-sessions.repo";
 import type { MemoryEventsRepo } from "@/server/db/repositories/memory-events.repo";
 import { jsonOk } from "@/server/http/respond";
 import type { MemoryPort } from "@/server/memory/memory-port";
@@ -9,6 +11,7 @@ export interface CronDeps {
   cronSecret: string;
   memory: () => MemoryPort;
   memoryEvents: MemoryEventsRepo;
+  sessions: Pick<CoachingSessionsRepo, "endIdleSessions">;
   now?: () => number;
 }
 
@@ -20,7 +23,10 @@ function authorized(request: Request, secret: string): boolean {
   return timingSafeEqual(a, b);
 }
 
-/** Daily: log relayer health + stale pending jobs, reconcile what we can. Metadata only. */
+/**
+ * Daily: log relayer health + stale pending jobs, reconcile what we can, and
+ * end sessions idle for more than 2 hours. Metadata only.
+ */
 export function createCronHealthHandler(deps: CronDeps) {
   const now = deps.now ?? Date.now;
   return async function cron(request: Request): Promise<Response> {
@@ -33,11 +39,16 @@ export function createCronHealthHandler(deps: CronDeps) {
       limit: 200,
     });
     const stalePending = await deps.memoryEvents.countStalePending(new Date(now() - 10 * 60_000));
+    const idleSessionsEnded = await deps.sessions.endIdleSessions({
+      idleBefore: new Date(now() - coachLimits.sessionIdleMs),
+      now: new Date(now()),
+    });
     const summary = {
       relayerOk: health.ok,
       relayerVersion: health.version ?? null,
       reconciled,
       stalePending,
+      idleSessionsEnded,
     };
     log.info("cron.health", summary);
     return jsonOk(summary);

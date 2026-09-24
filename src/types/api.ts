@@ -1,4 +1,4 @@
-import type { CoachingMode, MemoryKind } from "./domain";
+import type { CoachingMode, MemoryKind, MemoryStatus } from "./domain";
 import type { CoachProfile, MemoryView } from "./memory";
 
 export interface ApiErrorBody {
@@ -12,6 +12,7 @@ export interface SessionDto {
   memoryEnabled: boolean;
   turnCount: number;
   createdAt: string;
+  lastActivityAt: string;
   endedAt: string | null;
   savedMemories: number;
 }
@@ -24,6 +25,59 @@ export interface SessionsListDto {
   sessions: SessionDto[];
 }
 
+/** GET /api/sessions/active — the unfinished session to reopen (≤ 2 h idle), or null. */
+export interface ActiveSessionDto {
+  session: Omit<SessionDto, "savedMemories"> | null;
+}
+
+export interface TranscriptMessageDto {
+  seq: number;
+  role: "user" | "assistant";
+  /** Empty for failed/unreadable rows. */
+  text: string;
+  status: "ok" | "failed" | "unreadable";
+  createdAt: string;
+}
+
+/** GET /api/sessions/[id]/messages — the user's own decrypted transcript. */
+export interface SessionMessagesDto {
+  sessionId: string;
+  messages: TranscriptMessageDto[];
+  /** Send as `expectedSeq` on the next chat turn. */
+  nextSeq: number;
+  ended: boolean;
+}
+
+export interface SessionMemoryItemDto {
+  kind: MemoryKind;
+  status: MemoryStatus;
+  blobId: string | null;
+  explorerUrl: string | null;
+  /** Recalled from Walrus; null when recall didn't return this blob. */
+  text: string | null;
+  at: string | null;
+}
+
+/** GET /api/sessions/[id]/memories — what the coach kept from one session. */
+export interface SessionMemoriesDto {
+  items: SessionMemoryItemDto[];
+  /** Saved memories whose text was recalled from Walrus. */
+  retrieved: number;
+  /** Memories saved (done) for this session according to our bookkeeping. */
+  expected: number;
+  memoryEnabled: boolean;
+  /** Every recall failed — texts unavailable right now. */
+  degraded: boolean;
+}
+
+export interface SettingsDto {
+  saveTranscripts: boolean;
+}
+
+export interface DeletedDto {
+  deleted: number;
+}
+
 export interface MeDto {
   user: { id: string; name: string; firstName: string; email: string; image: string | null };
   onboarded: boolean;
@@ -31,6 +85,8 @@ export interface MeDto {
   isAdmin: boolean;
   /** Memories saved on Walrus for this user (drives the launcher's recap dot). */
   doneMemories: number;
+  /** Conversation history on/off (encrypted transcripts for the user's own viewing). */
+  saveTranscripts: boolean;
 }
 
 /** GET /api/me — 200 for visitors too, so the widget can ask "who am I?" without a 401. */

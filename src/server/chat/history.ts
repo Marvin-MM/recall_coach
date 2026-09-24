@@ -1,31 +1,19 @@
-import type { UIMessage } from "ai";
-import type { ChatRequest } from "@/lib/schemas/api";
+import type { ModelMessage } from "ai";
 
-type RequestMessage = ChatRequest["messages"][number];
-
-export function textOf(message: RequestMessage): string {
-  return message.parts
-    .flatMap((p) =>
-      p.type === "text" && "text" in p && typeof p.text === "string" ? [p.text] : [],
-    )
-    .join("\n")
-    .trim();
+export interface ThreadTurn {
+  role: "user" | "assistant";
+  text: string;
 }
 
 /**
- * Keep only user/assistant TEXT from the last `turns` exchanges. Data parts,
- * reasoning and anything else the client echoes back are dropped, so prior
- * reasoning is never sent back to the model and memory chips stay UI-only.
+ * Model input for the CURRENT thread only: the newest `turns` exchanges,
+ * starting with a user turn, as plain text messages (no data parts, no
+ * reasoning). Cross-session context never comes from here — only from the
+ * Walrus recall in the system prompt.
  */
-export function trimHistory(messages: readonly RequestMessage[], turns: number): UIMessage[] {
-  const cleaned: UIMessage[] = [];
-  for (const m of messages) {
-    const text = textOf(m);
-    if (!text) continue;
-    cleaned.push({ id: m.id, role: m.role, parts: [{ type: "text", text }] });
-  }
-  // Drop leading assistant messages so history starts with a user turn.
+export function toModelMessages(thread: readonly ThreadTurn[], turns: number): ModelMessage[] {
+  const cleaned = thread.filter((m) => m.text.trim().length > 0);
   let start = Math.max(0, cleaned.length - turns * 2);
   while (start < cleaned.length && cleaned[start]?.role !== "user") start++;
-  return cleaned.slice(start);
+  return cleaned.slice(start).map((m) => ({ role: m.role, content: m.text }));
 }

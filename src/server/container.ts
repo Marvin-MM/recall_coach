@@ -15,6 +15,9 @@ import type { ExtractionPromptInput } from "./llm/prompts/extraction";
 import { profileCache } from "./memory/profile-cache";
 import { getMemoryPort, memoryForSession } from "./memory/provider";
 import { getRateLimitPolicy } from "./ratelimit";
+import { envKeyring } from "./transcripts/crypto";
+import { loadThreadHistory } from "./transcripts/thread-history";
+import { createTranscriptStore } from "./transcripts/transcript-store";
 
 let models: ModelFactory | undefined;
 function getModels(): ModelFactory {
@@ -43,6 +46,8 @@ export function appDeps() {
     userSettings: createUserSettingsRepo(db),
     memoryEvents: createMemoryEventsRepo(db),
     recallEvents: createRecallEventsRepo(db),
+    transcripts: createTranscriptStore(db, envKeyring()),
+    threadHistory: loadThreadHistory,
     evidence: createEvidenceRepo(db),
     memoryFor: memoryForSession,
     memory: getMemoryPort,

@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import {
   type CoachingMode,
   type CoachingSessionRow,
@@ -22,6 +22,7 @@ export interface SessionListItem {
   memoryEnabled: boolean;
   turnCount: number;
   createdAt: Date;
+  lastActivityAt: Date;
   endedAt: Date | null;
   savedMemories: number;
 }
@@ -42,6 +43,13 @@ export interface CoachingSessionsRepo {
   /** Only allowed before the first turn of an open session; null if not allowed. */
   setMemoryEnabled(key: SessionOwnerKey, enabled: boolean): Promise<CoachingSessionRow | null>;
   countByUser(userId: string): Promise<number>;
+  /**
+   * Ends open sessions whose last activity is before `idleBefore` (all users
+   * when `userId` is omitted — the daily cron). Returns how many were ended.
+   */
+  endIdleSessions(input: { idleBefore: Date; now: Date; userId?: string }): Promise<number>;
+  /** Most recent open session active since `activeSince`, or null. */
+  findActive(userId: string, activeSince: Date): Promise<CoachingSessionRow | null>;
 }
 
 const owned = (key: SessionOwnerKey) =>
@@ -83,6 +91,7 @@ export function createCoachingSessionsRepo(db: Queryable): CoachingSessionsRepo 
           memoryEnabled: coachingSessions.memoryEnabled,
           turnCount: coachingSessions.turnCount,
           createdAt: coachingSessions.createdAt,
+          lastActivityAt: coachingSessions.lastActivityAt,
           endedAt: coachingSessions.endedAt,
           savedMemories: sql<number>`coalesce(${saved.count}, 0)::int`,
         })
@@ -122,6 +131,37 @@ export function createCoachingSessionsRepo(db: Queryable): CoachingSessionsRepo 
         .set({ memoryEnabled: enabled, updatedAt: new Date() })
         .where(and(owned(key), eq(coachingSessions.turnCount, 0), isNull(coachingSessions.endedAt)))
         .returning();
+      return rows[0] ?? null;
+    },
+
+    async endIdleSessions({ idleBefore, now, userId }) {
+      const rows = await db
+        .update(coachingSessions)
+        .set({ endedAt: now, updatedAt: now })
+        .where(
+          and(
+            isNull(coachingSessions.endedAt),
+            lt(coachingSessions.lastActivityAt, idleBefore),
+            ...(userId ? [eq(coachingSessions.userId, userId)] : []),
+          ),
+        )
+        .returning({ id: coachingSessions.id });
+      return rows.length;
+    },
+
+    async findActive(userId, activeSince) {
+      const rows = await db
+        .select()
+        .from(coachingSessions)
+        .where(
+          and(
+            eq(coachingSessions.userId, userId),
+            isNull(coachingSessions.endedAt),
+            gte(coachingSessions.lastActivityAt, activeSince),
+          ),
+        )
+        .orderBy(desc(coachingSessions.lastActivityAt))
+        .limit(1);
       return rows[0] ?? null;
     },
 

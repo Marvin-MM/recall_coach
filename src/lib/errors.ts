@@ -46,9 +46,14 @@ export class NotFoundError extends AppError {
   }
 }
 
+/**
+ * 409s carry a stable code the client can act on:
+ * SESSION_ENDED (read-only now), SESSION_IDLE (auto-ended after 2 h),
+ * STALE_THREAD (refetch the transcript), HISTORY_SETTING_CHANGED (refetch settings).
+ */
 export class ConflictError extends AppError {
-  constructor(message: string) {
-    super("CONFLICT", 409, message);
+  constructor(message: string, code = "CONFLICT") {
+    super(code, 409, message);
   }
 }
 

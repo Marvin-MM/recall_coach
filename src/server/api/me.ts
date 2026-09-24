@@ -34,6 +34,7 @@ export function createMeHandler(deps: MeDeps) {
         memoryConsent: Boolean(settings?.memoryConsentAt),
         isAdmin: deps.adminEmails.includes(user.email.toLowerCase()),
         doneMemories,
+        saveTranscripts: settings?.saveTranscripts ?? true,
       });
     } catch (error) {
       return errorResponse(error, { route: "me" });

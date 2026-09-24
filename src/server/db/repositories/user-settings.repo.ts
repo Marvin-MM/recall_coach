@@ -7,6 +7,8 @@ export interface UserSettingsRepo {
   get(userId: string): Promise<UserSettingsRow | null>;
   /** Sets onboarded_at + memory_consent_at atomically (creating the row if needed). */
   completeOnboarding(userId: string, at: Date): Promise<UserSettingsRow>;
+  /** Conversation history on/off (creates the settings row if needed). */
+  setSaveTranscripts(userId: string, value: boolean): Promise<UserSettingsRow>;
 }
 
 export function ensureUserSettings(db: Queryable, userId: string): Promise<unknown> {
@@ -29,6 +31,20 @@ export function createUserSettingsRepo(db: Queryable): UserSettingsRepo {
         .where(eq(userSettings.userId, userId))
         .limit(1);
       return rows[0] ?? null;
+    },
+
+    async setSaveTranscripts(userId, value) {
+      const rows = await db
+        .insert(userSettings)
+        .values({ userId, saveTranscripts: value })
+        .onConflictDoUpdate({
+          target: userSettings.userId,
+          set: { saveTranscripts: value, updatedAt: new Date() },
+        })
+        .returning();
+      const row = rows[0];
+      if (!row) throw new Error("setSaveTranscripts: upsert returned no row");
+      return row;
     },
 
     completeOnboarding(userId, at) {

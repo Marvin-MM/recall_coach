@@ -1,12 +1,6 @@
-import {
-  APICallError,
-  convertToModelMessages,
-  createUIMessageStream,
-  createUIMessageStreamResponse,
-  streamText,
-} from "ai";
+import { APICallError, createUIMessageStream, createUIMessageStreamResponse, streamText } from "ai";
 import { coachLimits } from "@/config/coach";
-import { ConflictError, errorCode, NotFoundError } from "@/lib/errors";
+import { ConflictError, errorCode } from "@/lib/errors";
 import { log } from "@/lib/log";
 import { chatRequestSchema } from "@/lib/schemas/api";
 import type { CoachUIMessage } from "@/types/chat";
@@ -15,6 +9,7 @@ import type { CoachingSessionsRepo } from "../db/repositories/coaching-sessions.
 import type { MemoryEventsRepo } from "../db/repositories/memory-events.repo";
 import type { RecallEventsRepo } from "../db/repositories/recall-events.repo";
 import type { UserSettingsRepo } from "../db/repositories/user-settings.repo";
+import type { CoachingSessionRow } from "../db/schema";
 import { errorResponse, parseJsonBody } from "../http/respond";
 import type { ExtractionResult } from "../llm/extraction";
 import { CHAT_PROVIDER_OPTIONS, CHAT_SETTINGS, type ModelFactory } from "../llm/model";
@@ -26,8 +21,35 @@ import { persistTurn } from "../memory/persist-service";
 import type { ProfileCache } from "../memory/profile-cache";
 import { recallForTurn } from "../memory/recall-service";
 import type { RateLimitPolicy } from "../ratelimit";
-import { textOf, trimHistory } from "./history";
+import type { ThreadHistoryArgs, ThreadMessage } from "../transcripts/thread-history";
+import { type ThreadTurn, toModelMessages } from "./history";
 import { buildMemoryPart } from "./memory-chips";
+
+/**
+ * Transcript writes, injected (the implementation lives in
+ * src/server/transcripts/, which this module may not import apart from
+ * thread-history.ts). See transcript-store.ts for the contract.
+ */
+export interface TranscriptWriter {
+  beginTurn(input: {
+    userId: string;
+    sessionId: string;
+    text: string;
+    expectedSeq: number | null;
+    now: Date;
+  }): Promise<{ session: CoachingSessionRow; userSeq: number | null; nextSeq: number | null }>;
+  appendAssistant(input: {
+    userId: string;
+    sessionId: string;
+    seq: number;
+    text: string;
+    status: "ok" | "failed";
+    now: Date;
+  }): Promise<void>;
+}
+
+/** Longest the request waits for the model before recording the reply as failed. */
+const REPLY_WAIT_MS = 58_000;
 
 export interface ChatServiceDeps {
   requireUser: UserResolver;
@@ -36,6 +58,9 @@ export interface ChatServiceDeps {
   userSettings: UserSettingsRepo;
   memoryEvents: MemoryEventsRepo;
   recallEvents: RecallEventsRepo;
+  transcripts: TranscriptWriter;
+  /** The current thread's own messages only (src/server/transcripts/thread-history.ts). */
+  threadHistory: (args: ThreadHistoryArgs) => Promise<ThreadMessage[]>;
   memoryFor: (memoryEnabled: boolean) => MemoryPort;
   models: ModelFactory;
   extract: (input: ExtractionPromptInput) => Promise<ExtractionResult>;
@@ -81,12 +106,26 @@ export function createChatService(deps: ChatServiceDeps) {
       await deps.rateLimit.enforce("chat", user.id);
       const body = await parseJsonBody(request, chatRequestSchema);
 
-      const session = await deps.sessions.getForUser({ id: body.sessionId, userId: user.id });
-      // 404 (not 403) for other users' sessions: no enumeration.
-      if (!session) throw new NotFoundError("Session not found.");
-      if (session.endedAt) throw new ConflictError("This session has ended. Start a new one.");
-
       const settings = await deps.userSettings.get(user.id);
+      const saveTranscripts = settings?.saveTranscripts ?? true;
+      // The client picks the request shape from the setting it last saw.
+      if (saveTranscripts ? body.expectedSeq === undefined : body.history === undefined) {
+        throw new ConflictError(
+          "Your conversation-history setting changed. Reloading the chat.",
+          "HISTORY_SETTING_CHANGED",
+        );
+      }
+      const lastUserText = body.message.trim();
+      // Ownership (404), open (409), idle (409), seq (409), user message + activity: one transaction.
+      const turn = await deps.transcripts.beginTurn({
+        userId: user.id,
+        sessionId: body.sessionId,
+        text: lastUserText,
+        expectedSeq: saveTranscripts ? (body.expectedSeq ?? null) : null,
+        now: now(),
+      });
+      const session = turn.session;
+
       const namespaces = deriveNamespaces(
         user.id,
         settings?.namespaceVersion ?? 1,
@@ -94,9 +133,22 @@ export function createChatService(deps: ChatServiceDeps) {
       );
       const memoryEnabled = session.memoryEnabled;
       const memory = deps.memoryFor(memoryEnabled);
-      const lastUser = body.messages.at(-1);
-      const lastUserText = lastUser ? textOf(lastUser) : "";
       const firstTurn = session.turnCount === 0;
+
+      // Model input = THIS thread only. History on: this session's own stored
+      // messages (which already end with the new user message). History off:
+      // the page's messages from the request, discarded afterwards.
+      let thread: ThreadTurn[];
+      if (saveTranscripts) {
+        thread = await deps.threadHistory({
+          userId: user.id,
+          sessionId: session.id,
+          maxTurns: coachLimits.historyTurns,
+        });
+        if (thread.at(-1)?.role !== "user") thread.push({ role: "user", text: lastUserText });
+      } else {
+        thread = [...(body.history ?? []), { role: "user", text: lastUserText }];
+      }
 
       const recall = await recallForTurn(
         {
@@ -118,16 +170,55 @@ export function createChatService(deps: ChatServiceDeps) {
         now: now(),
         userFirstName: user.name.split(/\s+/)[0] ?? null,
       });
-      const modelMessages = await convertToModelMessages(
-        trimHistory(body.messages, coachLimits.historyTurns),
-      );
+      const modelMessages = toModelMessages(thread, coachLimits.historyTurns);
 
       let assistantText = "";
+      let partialText = "";
       let llmFailed = false;
+      let aborted = false;
       const memoryPart = buildMemoryPart(recall, !memoryEnabled);
 
+      // Resolves when generation ends for any reason (finish, error, abort).
+      let settle: () => void = () => {};
+      const generationEnded = new Promise<void>((resolve) => {
+        settle = resolve;
+      });
+
+      // Wait for the model, then store the reply (or "[response failed]")
+      // before the stream closes, so the client can't send its next turn
+      // until the assistant row exists.
+      let replyStored: Promise<void> | undefined;
+      const storeReply = () => {
+        replyStored ??= (async () => {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          await Promise.race([
+            generationEnded,
+            new Promise<void>((resolve) => {
+              timer = setTimeout(resolve, REPLY_WAIT_MS);
+            }),
+          ]);
+          if (timer) clearTimeout(timer);
+          if (turn.userSeq === null) return; // history off: nothing is written
+          const text = assistantText.trim() || (aborted ? partialText.trim() : "");
+          try {
+            await deps.transcripts.appendAssistant({
+              userId: user.id,
+              sessionId: session.id,
+              seq: turn.userSeq + 1,
+              text,
+              status: llmFailed || text.length === 0 ? "failed" : "ok",
+              now: now(),
+            });
+          } catch (error) {
+            // The next turn's seq check (409 STALE_THREAD) makes the client reload.
+            log.error("chat.transcript_reply_failed", { sessionId: session.id, error });
+          }
+        })();
+        return replyStored;
+      };
+
       const stream = createUIMessageStream<CoachUIMessage>({
-        execute: ({ writer }) => {
+        execute: async ({ writer }) => {
           // Memory chips first, so the UI can render them before any text.
           writer.write({ type: "data-memory", data: memoryPart });
           const result = streamText({
@@ -138,13 +229,22 @@ export function createChatService(deps: ChatServiceDeps) {
             providerOptions: CHAT_PROVIDER_OPTIONS,
             maxRetries: 1,
             abortSignal: request.signal,
+            onChunk: ({ chunk }) => {
+              if (chunk.type === "text-delta") partialText += chunk.text;
+            },
             onFinish: ({ text }) => {
               assistantText = text;
+              settle();
             },
             onError: ({ error }) => {
               llmFailed = true;
               const { code } = describeLlmError(error);
               log.error(code, { model: deps.models.chatModelId, sessionId: session.id, error });
+              settle();
+            },
+            onAbort: () => {
+              aborted = true;
+              settle();
             },
           });
           writer.merge(
@@ -152,17 +252,25 @@ export function createChatService(deps: ChatServiceDeps) {
               sendReasoning: false,
               messageMetadata: ({ part }) =>
                 part.type === "start"
-                  ? { createdAt: Date.now(), model: deps.models.chatModelId, sessionId: session.id }
+                  ? {
+                      createdAt: Date.now(),
+                      model: deps.models.chatModelId,
+                      sessionId: session.id,
+                      ...(turn.nextSeq === null ? {} : { nextSeq: turn.nextSeq }),
+                    }
                   : undefined,
               onError: (error) => describeLlmError(error).message,
             }),
           );
+          await storeReply();
         },
         onError: (error) => describeLlmError(error).message,
       });
 
       deps.after(async () => {
         try {
+          // Also keeps a serverless function alive if the client disconnected.
+          await storeReply();
           await deps.sessions.incrementTurn({ id: session.id, userId: user.id });
           if (!memoryEnabled) return; // Amnesia Mode: nothing recorded, nothing saved.
           await deps.recallEvents.record({
