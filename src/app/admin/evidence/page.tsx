@@ -19,10 +19,13 @@ export default async function EvidencePage() {
   if (!user) redirect("/?signin=1&next=/admin/evidence");
   if (!isAdminEmail(user.email)) forbidden();
 
-  const evidence = await loadEvidence({
-    evidence: createEvidenceRepo(getDb()),
-    identity: memwalIdentity,
-  });
+  const repo = createEvidenceRepo(getDb());
+  const [evidence, recall] = await Promise.all([
+    loadEvidence({ evidence: repo, identity: memwalIdentity }),
+    repo.recallSummary(),
+  ]);
+  const pct = (n: number, d: number) => (d > 0 ? `${Math.round((n / d) * 1000) / 10}%` : "–");
+  const ms = (v: number | null) => (v === null ? "–" : `${v} ms`);
   const accountUrl = `${env.NEXT_PUBLIC_SUI_EXPLORER_OBJECT_URL}${evidence.accountId}`;
   const addressUrl = `${env.NEXT_PUBLIC_SUI_EXPLORER_OBJECT_URL.replace(/object\/$/, "account/")}${evidence.delegateSuiAddress}`;
 
@@ -99,6 +102,29 @@ export default async function EvidencePage() {
         </p>
       </section>
 
+      <section aria-labelledby="ev-recall" className="space-y-3">
+        <h2 id="ev-recall" className="text-lg font-medium">
+          Recall (memory-on turns)
+        </h2>
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            ["Turns with recall", String(recall.turns)],
+            ["Hit rate (≥1 memory)", pct(recall.hits, recall.turns)],
+            ["Median latency", ms(recall.medianLatencyMs)],
+            ["p95 latency", ms(recall.p95LatencyMs)],
+          ].map(([label, value]) => (
+            <div key={label} className="border border-border bg-card p-3">
+              <dt className="text-muted-foreground">{label}</dt>
+              <dd className="font-mono font-tabular text-2xl">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="text-muted-foreground">
+          Degraded recalls (timeout, relayer error or every match dropped):{" "}
+          {pct(recall.degraded, recall.turns)} ({recall.degraded}).
+        </p>
+      </section>
+
       <section aria-labelledby="ev-users" className="space-y-3">
         <h2 id="ev-users" className="text-lg font-medium">
           Per user
@@ -157,7 +183,7 @@ export default async function EvidencePage() {
               {evidence.users.length === 0 && (
                 <tr>
                   <td
-                    colSpan={MEMORY_KINDS.length + 7}
+                    colSpan={MEMORY_KINDS.length + 6}
                     className="p-4 text-center font-sans text-muted-foreground"
                   >
                     No users yet.

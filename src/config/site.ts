@@ -6,8 +6,10 @@ export const siteConfig = {
     "Practice with an AI coach that remembers your target role, how you learn, and what tripped you up — across every session and device. Memory stored encrypted on Walrus.",
   /** Cookie prefix for Better Auth cookies (kept stable across renames). */
   authCookiePrefix: "recall",
+  /** Public profile links; empty ones are hidden in the footer. */
   links: {
-    github: "https://github.com/",
+    // TODO(human): set the public repo, article and X post URLs once they exist.
+    github: "",
     article: "",
     x: "",
   },

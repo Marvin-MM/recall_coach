@@ -10,9 +10,9 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 - [x] Walrus Mainnet relayer confirmed — `pnpm memwal:verify` passed on 2026-09-22 (health ok, API 1.0.0, remember→recall round trip, blob `ua9JbxEsx7vZnr4T4AWNXx3URvBm47WVMyU1Yo3YtHo`)
 - [ ] Account ID + Agent ID + blob count — IDs below; blob count from `pnpm memwal:stats` against the **production** DB once real users exist
 - [ ] ≥3 real users × ≥10 done blobs each — `TODO(human)` (see docs/USER_TEST_GUIDE.md; check with `pnpm memwal:stats` or `/admin/evidence`)
-- [x] Article draft ready — `docs/article/ARTICLE_DRAFT.md`; screenshots/transcripts are `TODO(human)` slots
-- [x] X post draft; promo post drafts — `docs/article/X_POST.md`, `docs/article/PROMO_POST.md`
-- [x] Bug reports in `bug-hunt/reports/` + `docs/article/FEEDBACK_FORM.md` (both local only, gitignored)
+- [x] Article ready to publish once evidence is in: `docs/article/ARTICLE_FINAL.md` (local only). Real-use numbers, screenshots and the before/after transcript are `TODO(human)` slots
+- [x] X post draft: `docs/article/X_POST.md` (local only)
+- [x] Bug filing pack: `bug-hunt/ready/*.md`, `bug-hunt/ready/COMMENTS.md` and `bug-hunt/FILING_PLAN.md`, plus `docs/article/FEEDBACK_FORM.md` (all local only, gitignored)
 - [ ] Human-only items (below)
 
 ## Form fields and where each value comes from
@@ -32,11 +32,10 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 | Blob count | `TODO(human)` — “Done blobs” total from `pnpm memwal:stats` (production DB) / `/admin/evidence`; cross-checked with on-chain `memory_count` |
 | Number of real users | `TODO(human)` — `/admin/evidence` totals (pseudonymized) |
 | Example blob links | Any `blob_id` from `/admin/evidence` → `https://walruscan.com/mainnet/blob/<blobId>` |
-| Article URL (Medium/Inkray) | `TODO(human)` — publish `docs/article/ARTICLE_DRAFT.md` after filling real screenshots/transcripts |
+| Article URL (Medium/Inkray) | `TODO(human)`: publish `docs/article/ARTICLE_FINAL.md` after filling real numbers, screenshots and the transcript |
 | X post URL | `TODO(human)` — post `docs/article/X_POST.md` under the session announcement |
-| Promo post URL(s) | `TODO(human)` — `docs/article/PROMO_POST.md` (read each community's self-promotion rules first) |
 | Feedback (bug + improvement) | `docs/article/FEEDBACK_FORM.md` |
-| Bug bounty reports | `bug-hunt/reports/*.md` (file as GitHub issues; if issue creation is restricted, use the hackathon bug-bounty form) |
+| Bug bounty reports | Follow `bug-hunt/FILING_PLAN.md` (file `bug-hunt/ready/*.md` as GitHub issues, post `COMMENTS.md` drafts; if issue creation is restricted, use the bug-bounty form) |
 | Prize wallet | `TODO(human)` — a dedicated Sui wallet address you control (never the MemWal owner key) |
 
 ## Human-only items
@@ -45,10 +44,10 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 - [ ] Create / choose a dedicated Sui wallet address for prizes
 - [ ] Join the Walrus Discord
 - [ ] Submit the Airtable form (fields above)
-- [ ] File the confirmed GitHub issues from `bug-hunt/reports/` (or the bug-bounty form)
+- [ ] File the issues and comments in `bug-hunt/FILING_PLAN.md` order (or the bug-bounty form), then paste the URLs into the plan and `FEEDBACK_FORM.md`
 - [ ] Recruit ≥3 testers; run docs/USER_TEST_GUIDE.md over ≥2 days
-- [ ] Replace `TODO(human)` slots in `src/content/before-after.ts` and the article with real, consented material
-- [ ] Publish the article; post on X under the session announcement; post the promo versions
+- [ ] Replace `TODO(human)` slots in `src/content/before-after.ts` and the article with real, consented material; ask me to pull production evidence (`pnpm memwal:stats --blob-links`) once all testers are done
+- [ ] Publish the article; post on X under the session announcement
 - [ ] Google Cloud Console: OAuth consent screen → *In production*; add the production redirect URI
 
 ## Pre-submission verification
@@ -57,6 +56,6 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 pnpm run ci                 # lint, typecheck, unit + integration tests, build
 pnpm test:e2e           # Playwright + axe (needs .env.e2e)
 pnpm memwal:verify      # against Mainnet
-pnpm memwal:stats       # point DATABASE_URL at production (read-only queries)
+pnpm memwal:stats --blob-links   # point DATABASE_URL at production (read-only queries)
 curl https://<domain>/api/health
 ```

@@ -379,4 +379,38 @@ describe("evidence repo", () => {
     expect(rows[0]?.doneByKind).toEqual({ mistake: 2 });
     expect(rows[1]).toMatchObject({ doneTotal: 0, sessions: 0, firstActivity: null });
   });
+
+  it("summarizes recall hit rate and latency percentiles across all users", async () => {
+    const repo = createEvidenceRepo(t.db);
+    expect(await repo.recallSummary()).toEqual({
+      turns: 0,
+      hits: 0,
+      degraded: 0,
+      medianLatencyMs: null,
+      p95LatencyMs: null,
+    });
+    const u = await insertUser(t.db);
+    const recalls = createRecallEventsRepo(t.db);
+    const base = {
+      userId: u.id,
+      coachingSessionId: null,
+      bestDistance: null,
+      degradedReason: null,
+    };
+    for (const [latencyMs, resultCount, degraded] of [
+      [100, 2, false],
+      [200, 0, false],
+      [300, 1, false],
+      [4000, 0, true],
+    ] as const) {
+      await recalls.record({ ...base, recalledBlobIds: [], latencyMs, resultCount, degraded });
+    }
+    expect(await repo.recallSummary()).toEqual({
+      turns: 4,
+      hits: 2,
+      degraded: 1,
+      medianLatencyMs: 250,
+      p95LatencyMs: 3445,
+    });
+  });
 });

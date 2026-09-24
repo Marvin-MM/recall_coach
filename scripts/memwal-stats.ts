@@ -1,9 +1,13 @@
 /**
- * pnpm memwal:stats [--restore] — hackathon evidence from Postgres metadata,
- * cross-checked against Walrus Memory.
+ * pnpm memwal:stats [--restore] [--blob-links] — usage evidence from Postgres
+ * metadata, cross-checked against Walrus Memory.
  *
  * - Per user (pseudonymized user-1, user-2 … in sign-up order): done blobs by
  *   kind, total, sessions; flags whether ≥3 users have ≥10 done blobs.
+ * - Recall quality over memory-on turns: hit rate (≥1 memory recalled, not
+ *   degraded), degraded share, median and p95 recall latency.
+ * - `--blob-links` prints explorer links for the 2 most recent done blobs to
+ *   the console only (never to the stats file).
  * - On-chain cross-check per namespace via `listNamespaces()` (read-only
  *   metadata: memory_count). With `--restore`, also calls `restore(ns, 1)` and
  *   reports its `total` (on-chain blobs the relayer sees). NOTE: restore is not
@@ -13,7 +17,7 @@
 import "./load-env";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { MemWal, type NamespaceSummary } from "@mysten-incubation/memwal";
-import { asc } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 
 async function main(): Promise<void> {
   const withRestore = process.argv.includes("--restore");
@@ -29,7 +33,9 @@ async function main(): Promise<void> {
   const { MEMORY_KINDS } = await import("../src/types/domain");
 
   const db = getDb();
-  const rows = await createEvidenceRepo(db).perUser();
+  const evidenceRepo = createEvidenceRepo(db);
+  const rows = await evidenceRepo.perUser();
+  const recall = await evidenceRepo.recallSummary();
   const evidence = buildEvidence(rows, await memwalIdentity());
   const settings = await db
     .select({ userId: schema.userSettings.userId, version: schema.userSettings.namespaceVersion })
@@ -67,6 +73,19 @@ async function main(): Promise<void> {
     `**Threshold (≥${SUBMISSION_MIN_USERS} users × ≥${SUBMISSION_MIN_BLOBS} done blobs): ${
       evidence.totals.meetsThreshold ? "MET" : "NOT MET"
     }** — ${evidence.totals.usersWith10Plus} user(s) with ≥${SUBMISSION_MIN_BLOBS}; ${evidence.totals.doneBlobs} done blobs total across ${evidence.totals.users} users and ${evidence.totals.sessions} sessions.`,
+    "",
+  );
+
+  const pct = (n: number, d: number) => (d > 0 ? `${((n / d) * 100).toFixed(1)}%` : "n/a");
+  lines.push(
+    "## Recall (memory-on turns)",
+    "",
+    `- Turns with a recall step: ${recall.turns}`,
+    `- Recall hit rate (≥1 memory recalled, not degraded): ${pct(recall.hits, recall.turns)} (${recall.hits}/${recall.turns})`,
+    `- Degraded recalls (timeout / relayer error / all matches dropped): ${pct(recall.degraded, recall.turns)} (${recall.degraded})`,
+    `- Recall latency: median ${recall.medianLatencyMs ?? "n/a"} ms, p95 ${recall.p95LatencyMs ?? "n/a"} ms`,
+    "",
+    "## Per user",
     "",
   );
 
@@ -119,6 +138,19 @@ async function main(): Promise<void> {
     "",
     "Notes: \"Done\" counts come from `memory_events` (status = done, blob id recorded). The on-chain column is `memory_count` from the relayer's `listNamespaces()` for the user's facts and profile namespaces. Differences usually mean jobs still pending or rows written by earlier test runs.",
   );
+
+  if (process.argv.includes("--blob-links")) {
+    const recent = await db
+      .select({ blobId: schema.memoryEvents.blobId })
+      .from(schema.memoryEvents)
+      .where(eq(schema.memoryEvents.status, "done"))
+      .orderBy(desc(schema.memoryEvents.completedAt))
+      .limit(2);
+    console.log("\nExample blob links (console only; confirm consent before publishing):");
+    for (const r of recent) {
+      if (r.blobId) console.log(`  ${env.NEXT_PUBLIC_WALRUS_EXPLORER_BLOB_URL}${r.blobId}`);
+    }
+  }
 
   const outDir = "docs/evidence";
   mkdirSync(outDir, { recursive: true });

@@ -16,8 +16,19 @@ export interface UserEvidenceRow {
   lastActivity: Date | null;
 }
 
+/** Account-wide recall quality over memory-on turns (one recall event per turn). */
+export interface RecallSummary {
+  turns: number;
+  /** Turns where ≥1 memory was recalled and recall was not degraded. */
+  hits: number;
+  degraded: number;
+  medianLatencyMs: number | null;
+  p95LatencyMs: number | null;
+}
+
 export interface EvidenceRepo {
   perUser(): Promise<UserEvidenceRow[]>;
+  recallSummary(): Promise<RecallSummary>;
 }
 
 /**
@@ -27,6 +38,30 @@ export interface EvidenceRepo {
  */
 export function createEvidenceRepo(db: Queryable): EvidenceRepo {
   return {
+    async recallSummary() {
+      const [row] = await db
+        .select({
+          turns: sql<number>`count(*)::int`,
+          hits: sql<number>`count(*) filter (where ${recallEvents.resultCount} > 0 and not ${recallEvents.degraded})::int`,
+          degraded: sql<number>`count(*) filter (where ${recallEvents.degraded})::int`,
+          median: sql<
+            number | null
+          >`percentile_cont(0.5) within group (order by ${recallEvents.latencyMs})`,
+          p95: sql<
+            number | null
+          >`percentile_cont(0.95) within group (order by ${recallEvents.latencyMs})`,
+        })
+        .from(recallEvents);
+      const round = (v: number | string | null | undefined) =>
+        v === null || v === undefined ? null : Math.round(Number(v));
+      return {
+        turns: row?.turns ?? 0,
+        hits: row?.hits ?? 0,
+        degraded: row?.degraded ?? 0,
+        medianLatencyMs: round(row?.median),
+        p95LatencyMs: round(row?.p95),
+      };
+    },
     async perUser() {
       const users = await db
         .select({ id: user.id })
