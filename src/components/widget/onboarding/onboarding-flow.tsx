@@ -393,11 +393,13 @@ export function OnboardingFlow({
                   Walrus, a public decentralized storage network. Only this coach can decrypt them.
                 </li>
                 <li>
-                  There's no delete button in Recall yet, so skip anything you wouldn't want kept.
+                  There's no delete button for memories in Recall yet, so skip anything you wouldn't
+                  want kept.
                 </li>
                 <li>
-                  Conversation transcripts are not stored by us. Don't share passwords or other
-                  people's personal details.
+                  Transcripts are for you: saved encrypted so you can reread them (turn this off in
+                  Settings). The coach only uses memories across sessions. Don't share passwords or
+                  other people's personal details.
                 </li>
               </ul>
               <div className="flex items-start gap-2 pt-1">

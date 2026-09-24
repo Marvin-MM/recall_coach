@@ -138,7 +138,11 @@ test.describe("full coaching flow", () => {
       .getByRole("textbox", { name: "Message the coach" })
       .fill("Let's practice. What should I work on?");
     await page.keyboard.press("Enter");
-    await expect(dialog.getByText(/Tell me about a time you missed a deadline/)).toBeVisible();
+    await expect(
+      dialog
+        .getByRole("log", { name: "Conversation" })
+        .getByText(/Tell me about a time you missed a deadline/),
+    ).toBeVisible();
     await expect(dialog.getByRole("button", { name: "Send message" })).toBeVisible();
     await expect(page.locator('[aria-live="polite"][aria-atomic="true"]')).toContainText(
       "Coach replied",
@@ -194,6 +198,125 @@ test.describe("full coaching flow", () => {
     await expect(
       dialog.getByRole("link", { name: /View blob on Walruscan/ }).first(),
     ).toBeVisible();
+  });
+
+  test("history: a refresh restores the thread; History shows the transcript + memories; New session recaps", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signIn(context, baseURL ?? "", { onboarded: true, name: "Hopper Tester" });
+    await page.goto("/");
+    await openWidget(page);
+    const dialog = page.getByRole("dialog", { name: /Recall/ });
+    const textbox = dialog.getByRole("textbox", { name: "Message the coach" });
+    const FIRST = "I want to practise STAR answers with a measurable result";
+
+    await dialog.getByRole("button", { name: /Mock interview/ }).click();
+    await textbox.fill(FIRST);
+    await page.keyboard.press("Enter");
+    await expect(
+      dialog
+        .getByRole("log", { name: "Conversation" })
+        .getByText(/Tell me about a time you missed a deadline/),
+    ).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Send message" })).toBeVisible();
+
+    // Refresh mid-session: the unfinished thread is restored from the encrypted transcript…
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(FIRST)).toBeVisible();
+    await expect(
+      dialog
+        .getByRole("log", { name: "Conversation" })
+        .getByText(/Tell me about a time you missed a deadline/),
+    ).toBeVisible();
+    // …and the conversation continues in order (seq continuity, no 409).
+    await textbox.fill("My answer: I cut build times by 40% by caching dependencies.");
+    await page.keyboard.press("Enter");
+    await expect(
+      dialog
+        .getByRole("log", { name: "Conversation" })
+        .getByText(/Tell me about a time you missed a deadline/),
+    ).toHaveCount(2);
+    await expect(dialog.getByRole("button", { name: "Send message" })).toBeVisible();
+
+    // End → History → read-only detail with transcript and memory cards.
+    await dialog.getByRole("button", { name: "End session" }).click();
+    await expect(dialog.getByText(/Saved to Walrus: .*saved/)).toBeVisible({ timeout: 30_000 });
+    await dialog.getByRole("button", { name: "View in History" }).click();
+    await expect(dialog.getByRole("tab", { name: "History", selected: true })).toBeVisible();
+    await dialog
+      .getByRole("list", { name: "Past sessions" })
+      .getByRole("button", { name: /Mock interview/ })
+      .first()
+      .click();
+    const transcript = dialog.getByRole("list", { name: "Transcript" });
+    await expect(transcript.getByText(FIRST)).toBeVisible();
+    await expect(transcript.getByText("You").first()).toBeVisible();
+    await expect(transcript.getByText("Coach").first()).toBeVisible();
+    await expectAccessible(page, "session detail (transcript)", '[role="dialog"]');
+    await dialog.getByRole("tab", { name: "Memories" }).click();
+    const cards = dialog.getByRole("list", { name: "Memories saved from this session" });
+    await expect(
+      cards.getByText(/practise behavioral STAR answers with measurable results/).first(),
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(cards.getByRole("link", { name: /View blob on Walruscan/ }).first()).toBeVisible();
+    await expectAccessible(page, "session detail (memories)", '[role="dialog"]');
+
+    // The only action: a NEW session that opens with a recap of what was kept.
+    await dialog.getByRole("button", { name: "New session (coach remembers you)" }).click();
+    await expect(
+      dialog.getByRole("heading", { name: /Picking up from Mock interview/ }),
+    ).toBeVisible();
+    await expect(
+      dialog.getByText(/practise behavioral STAR answers with measurable results/).first(),
+    ).toBeVisible();
+    await textbox.fill("Let's continue where we left off");
+    await page.keyboard.press("Enter");
+    await expect(dialog.getByRole("button", { name: /Recalled \d+ memor/ })).toBeVisible();
+  });
+
+  test("history off: the chat says so and nothing is restored after a refresh", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signIn(context, baseURL ?? "", { onboarded: true });
+    await page.goto("/");
+    await openWidget(page);
+    const dialog = page.getByRole("dialog", { name: /Recall/ });
+    await dialog.getByRole("button", { name: "Coach menu" }).click();
+    await page.getByRole("menuitem", { name: "Settings" }).click();
+    const settings = page.getByRole("dialog", { name: "Settings" });
+    await expect(settings.getByText(/Deleting history doesn't delete memories/)).toBeVisible();
+    await expectAccessible(page, "settings", '[data-slot="sheet-content"]');
+    await settings.getByRole("switch", { name: "Save conversation history" }).click();
+    await expect(
+      settings.getByRole("switch", { name: "Save conversation history" }),
+    ).not.toBeChecked();
+    await page.keyboard.press("Escape");
+
+    await dialog.getByRole("button", { name: /Just chat/ }).click();
+    await expect(
+      dialog.getByText("History is off — this conversation won't be saved or restored."),
+    ).toBeVisible();
+    await dialog.getByRole("textbox", { name: "Message the coach" }).fill("a private question");
+    await page.keyboard.press("Enter");
+    await expect(dialog.getByRole("button", { name: "Send message" })).toBeVisible();
+    await dialog.getByRole("textbox", { name: "Message the coach" }).fill("and a follow-up");
+    await page.keyboard.press("Enter");
+    await expect(
+      dialog
+        .getByRole("log", { name: "Conversation" })
+        .getByText(/Tell me about a time you missed a deadline/),
+    ).toHaveCount(2);
+
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await expect(dialog.getByRole("tab", { name: "Practice" })).toBeVisible();
+    await expect(dialog.getByText("a private question")).toHaveCount(0);
   });
 
   test("Amnesia Mode shows the banner and recalls nothing", async ({ page, context, baseURL }) => {

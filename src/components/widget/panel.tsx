@@ -1,6 +1,6 @@
 "use client";
 
-import { BrainCircuit, EllipsisVertical, LogOut, Maximize2, X } from "lucide-react";
+import { BrainCircuit, EllipsisVertical, LogOut, Maximize2, Settings, X } from "lucide-react";
 import type { ReactNode, RefObject } from "react";
 import { LogoMark } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ export interface PanelHeaderProps {
   onExpand: () => void;
   onClose: () => void;
   onOpenInspector: () => void;
+  onOpenSettings: () => void;
   onSignOut: () => void;
 }
 
@@ -34,6 +35,7 @@ export function PanelHeader({
   onExpand,
   onClose,
   onOpenInspector,
+  onOpenSettings,
   onSignOut,
 }: PanelHeaderProps) {
   return (
@@ -55,6 +57,10 @@ export function PanelHeader({
               <DropdownMenuItem onSelect={onOpenInspector}>
                 <BrainCircuit aria-hidden />
                 What I remember
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={onOpenSettings}>
+                <Settings aria-hidden />
+                Settings
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={onSignOut}>
                 <LogOut aria-hidden />

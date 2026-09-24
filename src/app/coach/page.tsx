@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/marketing/theme-toggle";
 import { CoachWidget } from "@/components/widget/coach-widget";
 import { siteConfig } from "@/config/site";
@@ -16,9 +17,8 @@ export default async function CoachPage() {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="flex h-12 items-center gap-2 border-b border-border px-4 text-sm">
-        <Link href="/" className="mr-auto flex items-center gap-2 font-semibold">
-          <span aria-hidden className="inline-block size-3 bg-primary ring-1 ring-ink" />
-          {siteConfig.name}
+        <Link href="/" aria-label={`${siteConfig.name} home`} className="mr-auto flex items-center">
+          <Logo className="h-6" priority />
         </Link>
         <ThemeToggle />
       </header>

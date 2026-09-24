@@ -1,12 +1,22 @@
-import type { CreateSessionInput, OnboardingInput, PatchSessionInput } from "@/lib/schemas/api";
 import type {
+  CreateSessionInput,
+  OnboardingInput,
+  PatchSessionInput,
+  PatchSettingsInput,
+} from "@/lib/schemas/api";
+import type {
+  ActiveSessionDto,
   ApiErrorBody,
+  DeletedDto,
   MemoryInspectorDto,
   MeResponse,
   OnboardingResultDto,
   SessionDetailDto,
   SessionDto,
+  SessionMemoriesDto,
+  SessionMessagesDto,
   SessionsListDto,
+  SettingsDto,
 } from "@/types/api";
 
 /** Typed error for non-2xx API responses (never includes stack traces). */
@@ -48,14 +58,24 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   );
 }
 
+const sessionPath = (id: string) => `/api/sessions/${encodeURIComponent(id)}`;
+
 export const api = {
   me: () => request<MeResponse>("/api/me"),
   sessions: () => request<SessionsListDto>("/api/sessions"),
+  activeSession: () => request<ActiveSessionDto>("/api/sessions/active"),
+  sessionMessages: (id: string) => request<SessionMessagesDto>(`${sessionPath(id)}/messages`),
+  deleteSessionMessages: (id: string) =>
+    request<DeletedDto>(`${sessionPath(id)}/messages`, { method: "DELETE" }),
+  sessionMemories: (id: string) => request<SessionMemoriesDto>(`${sessionPath(id)}/memories`),
+  patchSettings: (input: PatchSettingsInput) =>
+    request<SettingsDto>("/api/me/settings", { method: "PATCH", body: JSON.stringify(input) }),
+  deleteAllTranscripts: () => request<DeletedDto>("/api/me/transcripts", { method: "DELETE" }),
   createSession: (input: CreateSessionInput) =>
     request<SessionDto>("/api/sessions", { method: "POST", body: JSON.stringify(input) }),
-  session: (id: string) => request<SessionDetailDto>(`/api/sessions/${encodeURIComponent(id)}`),
+  session: (id: string) => request<SessionDetailDto>(sessionPath(id)),
   patchSession: (id: string, input: PatchSessionInput) =>
-    request<SessionDto>(`/api/sessions/${encodeURIComponent(id)}`, {
+    request<SessionDto>(sessionPath(id), {
       method: "PATCH",
       body: JSON.stringify(input),
     }),

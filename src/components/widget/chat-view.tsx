@@ -2,8 +2,17 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { BrainCircuit, Download, EyeOff, RotateCcw, Square } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  BrainCircuit,
+  Download,
+  EyeOff,
+  History,
+  RotateCcw,
+  Square,
+  TriangleAlert,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   Conversation,
   ConversationContent,
@@ -20,8 +29,9 @@ import {
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { coachLimits } from "@/config/coach";
-import { safeSession } from "@/lib/browser-storage";
+import { ApiError, api } from "@/lib/api-client";
 import type { CoachUIMessage } from "@/types/chat";
 import type { CoachingMode } from "@/types/domain";
 import {
@@ -32,6 +42,8 @@ import {
 } from "./export-conversation";
 import { MessageMemoryChips } from "./message-memory-chips";
 import { parseScorecard, Scorecard } from "./scorecard";
+import type { RecapSeed } from "./state";
+import { buildClientHistory, latestNextSeq, transcriptToUiMessages } from "./thread-utils";
 
 const SUGGESTIONS: Record<CoachingMode, string[]> = {
   mock_interview: [
@@ -52,31 +64,26 @@ const SUGGESTIONS: Record<CoachingMode, string[]> = {
   ],
 };
 
-const storageKey = (sessionId: string) => `recall:chat:${sessionId}`;
-
-function loadMessages(sessionId: string): CoachUIMessage[] {
-  const raw = safeSession.get(storageKey(sessionId));
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? (parsed as CoachUIMessage[]) : [];
-  } catch {
-    return [];
-  }
-}
+const ENDED_CODES = new Set(["SESSION_ENDED", "SESSION_IDLE"]);
 
 /** Server errors arrive as JSON in the Error message; show the human part. */
-export function readableError(error: Error): { message: string; ended: boolean } {
+export function readableError(error: Error): {
+  message: string;
+  code: string | null;
+  ended: boolean;
+} {
   try {
     const body = JSON.parse(error.message) as { error?: { code?: string; message?: string } };
     if (body.error?.message) {
-      return { message: body.error.message, ended: body.error.code === "CONFLICT" };
+      const code = body.error.code ?? null;
+      return { message: body.error.message, code, ended: code !== null && ENDED_CODES.has(code) };
     }
   } catch {
     // not JSON — streamed error text
   }
   return {
     message: error.message || "Something went wrong. Please retry.",
+    code: null,
     ended: false,
   };
 }
@@ -94,33 +101,103 @@ export interface ChatViewProps {
   mode: CoachingMode;
   memoryEnabled: boolean;
   title: string;
+  /** Conversation history on: turns are stored encrypted and restored. */
+  saveTranscripts: boolean;
+  /** Reopen with the stored transcript (unfinished session). */
+  restore?: boolean;
+  recap?: RecapSeed | undefined;
   onEnd: (messages: CoachUIMessage[]) => void;
   onOpenInspector: () => void;
+  /** The history setting changed elsewhere: re-read settings and reopen this chat. */
+  onReload: () => void;
+  onHome: () => void;
 }
 
-export function ChatView({
+type Loaded = { messages: CoachUIMessage[]; nextSeq: number };
+
+/** Loads the stored thread first (history on + restore), then mounts the chat. */
+export function ChatView(props: ChatViewProps) {
+  const needsTranscript = props.saveTranscripts && props.restore === true;
+  const [loaded, setLoaded] = useState<Loaded | null>(
+    needsTranscript ? null : { messages: [], nextSeq: 0 },
+  );
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoadError(null);
+    try {
+      const t = await api.sessionMessages(props.sessionId);
+      setLoaded({ messages: transcriptToUiMessages(t.messages), nextSeq: t.nextSeq });
+    } catch (e) {
+      setLoadError(e instanceof ApiError ? e.message : "Couldn't load this conversation.");
+    }
+  }, [props.sessionId]);
+
+  useEffect(() => {
+    if (needsTranscript) void load();
+  }, [needsTranscript, load]);
+
+  if (loadError) {
+    return (
+      <div role="alert" className="flex flex-1 flex-col items-start gap-3 p-5 text-sm">
+        <p>{loadError}</p>
+        <Button variant="outline" onClick={() => void load()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+  if (!loaded) {
+    return (
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label="Restoring your conversation"
+        className="space-y-3 p-4"
+      >
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="ml-auto h-10 w-2/3" />
+        <Skeleton className="h-16 w-4/5" />
+      </div>
+    );
+  }
+  return <ChatThread {...props} initial={loaded} key={props.sessionId} />;
+}
+
+function ChatThread({
   sessionId,
   mode,
   memoryEnabled,
   title,
+  saveTranscripts,
+  recap,
+  initial,
   onEnd,
   onOpenInspector,
-}: ChatViewProps) {
-  const [initialMessages] = useState(() => loadMessages(sessionId));
+  onReload,
+  onHome,
+}: ChatViewProps & { initial: Loaded }) {
+  const nextSeq = useRef(initial.nextSeq);
   const transport = useMemo(
     () =>
       new DefaultChatTransport<CoachUIMessage>({
         api: "/api/chat",
-        prepareSendMessagesRequest: ({ messages }) => ({
-          body: { sessionId, messages: messages.slice(-coachLimits.maxMessages) },
-        }),
+        prepareSendMessagesRequest: ({ messages }) => {
+          const last = messages.at(-1);
+          const message = last ? messageText(last).slice(0, coachLimits.maxTextPartChars) : "";
+          // History on: the server rebuilds the thread from this session's
+          // encrypted transcript. History off: send this page's thread only.
+          return saveTranscripts
+            ? { body: { sessionId, message, expectedSeq: nextSeq.current } }
+            : { body: { sessionId, message, history: buildClientHistory(messages.slice(0, -1)) } };
+        },
       }),
-    [sessionId],
+    [sessionId, saveTranscripts],
   );
-  const { messages, sendMessage, status, stop, error, regenerate, clearError } =
+  const { messages, setMessages, sendMessage, status, stop, error, regenerate, clearError } =
     useChat<CoachUIMessage>({
       id: sessionId,
-      messages: initialMessages,
+      messages: initial.messages,
       transport,
       experimental_throttle: 50,
     });
@@ -128,11 +205,36 @@ export function ChatView({
   const [announcement, setAnnouncement] = useState("");
   const previousStatus = useRef(status);
   const busy = status === "submitted" || status === "streaming";
+  const err = error ? readableError(error) : null;
 
-  // Persist the transcript locally (this tab only) so "Expand" keeps state.
+  // Follow the server's seq: every accepted turn stores a user row + a reply row.
   useEffect(() => {
-    if (!busy) safeSession.set(storageKey(sessionId), JSON.stringify(messages));
-  }, [busy, messages, sessionId]);
+    if (busy) return;
+    const seq = latestNextSeq(messages);
+    if (seq !== undefined && seq > nextSeq.current) nextSeq.current = seq;
+  }, [busy, messages]);
+
+  // Another tab moved this thread on (409 STALE_THREAD): reload the stored version.
+  const reloading = useRef(false);
+  useEffect(() => {
+    if (err?.code === "STALE_THREAD" && !reloading.current) {
+      reloading.current = true;
+      void api
+        .sessionMessages(sessionId)
+        .then((t) => {
+          nextSeq.current = t.nextSeq;
+          setMessages(transcriptToUiMessages(t.messages));
+          clearError();
+          toast.info("This conversation changed in another tab — showing the latest version.");
+        })
+        .catch(() => toast.error("Couldn't reload this conversation. Please refresh."))
+        .finally(() => {
+          reloading.current = false;
+        });
+    } else if (err?.code === "HISTORY_SETTING_CHANGED") {
+      onReload();
+    }
+  }, [err?.code, sessionId, setMessages, clearError, onReload]);
 
   // Announce only COMPLETED replies to screen readers (not every token).
   useEffect(() => {
@@ -148,7 +250,7 @@ export function ChatView({
 
   function send(text: string) {
     const trimmed = text.trim();
-    if (!trimmed || busy) return;
+    if (!trimmed || busy || err?.ended) return;
     clearError();
     void sendMessage({ text: trimmed.slice(0, coachLimits.maxTextPartChars) });
   }
@@ -158,7 +260,7 @@ export function ChatView({
     downloadText(`${title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.md`, md);
   }
 
-  const err = error ? readableError(error) : null;
+  const showRecap = messages.length === 0 && recap && recap.items.length > 0;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -197,17 +299,42 @@ export function ChatView({
           Amnesia Mode: nothing is recalled or saved.
         </p>
       )}
+      {!saveTranscripts && (
+        <p
+          className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-xs text-muted-foreground"
+          role="note"
+        >
+          <History className="size-3.5 shrink-0" aria-hidden />
+          History is off — this conversation won't be saved or restored.
+        </p>
+      )}
 
       <Conversation className="min-h-0" aria-live="off" aria-label="Conversation">
         <ConversationContent className="gap-6 px-3 py-4 sm:px-4">
           {messages.length === 0 && (
-            <div className="space-y-2 py-6 text-sm">
+            <div className="space-y-3 py-6 text-sm">
               <p className="font-medium">Ready when you are.</p>
               <p className="text-muted-foreground">
                 {memoryEnabled
                   ? "Ask what to work on — I'll start from what I remember about your last sessions."
                   : "This session starts from a blank slate, so you can compare it with a memory session."}
               </p>
+              {showRecap && (
+                <section
+                  aria-labelledby="chat-recap"
+                  className="space-y-1.5 border-l-2 border-link bg-card py-2 pr-3 pl-3"
+                >
+                  <h4 id="chat-recap" className="flex items-center gap-1.5 text-xs font-medium">
+                    <History className="size-3.5 text-link" aria-hidden />
+                    Picking up from {recap.fromTitle}
+                  </h4>
+                  <ul className="list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+                    {recap.items.slice(0, 4).map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </section>
+              )}
             </div>
           )}
           {messages.map((m, i) => {
@@ -215,11 +342,19 @@ export function ChatView({
             const memory = m.role === "assistant" ? memoryPartOf(m) : null;
             const streamingThis = busy && i === messages.length - 1 && m.role === "assistant";
             const card = m.role === "assistant" && !streamingThis ? parseScorecard(text) : null;
+            const stored = m.metadata?.status;
             return (
               <Message key={m.id} from={m.role === "user" ? "user" : "assistant"}>
                 {memory && <MessageMemoryChips part={memory} />}
                 <MessageContent className="group-[.is-user]:rounded-none group-[.is-user]:bg-accent">
-                  {m.role === "assistant" ? (
+                  {stored === "failed" || stored === "unreadable" ? (
+                    <p className="flex items-center gap-1.5 text-muted-foreground italic">
+                      <TriangleAlert className="size-3.5" aria-hidden />
+                      {stored === "failed"
+                        ? "Response failed"
+                        : "This message couldn't be decrypted."}
+                    </p>
+                  ) : m.role === "assistant" ? (
                     <>
                       {card && <Scorecard card={card} />}
                       {text ? (
@@ -240,13 +375,17 @@ export function ChatView({
               <Shimmer>{memoryEnabled ? "Checking what I remember…" : "Thinking…"}</Shimmer>
             </Message>
           )}
-          {err && (
+          {err && err.code !== "STALE_THREAD" && err.code !== "HISTORY_SETTING_CHANGED" && (
             <div
               role="alert"
               className="flex flex-col gap-2 border-l-2 border-destructive bg-card p-3 text-sm"
             >
               <p className="text-destructive">{err.message}</p>
-              {!err.ended && (
+              {err.ended ? (
+                <Button variant="outline" size="sm" className="self-start" onClick={onHome}>
+                  Start a new session
+                </Button>
+              ) : (
                 <Button
                   variant="outline"
                   size="sm"
@@ -298,7 +437,11 @@ export function ChatView({
                 <Square aria-hidden />
               </Button>
             ) : (
-              <PromptInputSubmit status={status} aria-label="Send message" />
+              <PromptInputSubmit
+                status={status}
+                disabled={Boolean(err?.ended)}
+                aria-label="Send message"
+              />
             )}
           </PromptInputFooter>
         </PromptInput>

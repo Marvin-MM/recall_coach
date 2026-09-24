@@ -18,6 +18,7 @@ interface Props {
   memoryEnabled: boolean;
   messages: readonly CoachUIMessage[];
   onHome: () => void;
+  onHistory: () => void;
   onOpenInspector: () => void;
 }
 
@@ -70,6 +71,7 @@ export function SessionSummary({
   memoryEnabled,
   messages,
   onHome,
+  onHistory,
   onOpenInspector,
 }: Props) {
   const { detail, timedOut, settled } = useSessionJobs(sessionId, memoryEnabled);
@@ -192,6 +194,9 @@ export function SessionSummary({
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={onHome}>Start another session</Button>
+        <Button variant="outline" onClick={onHistory}>
+          View in History
+        </Button>
         {memoryEnabled && (
           <Button variant="outline" onClick={onOpenInspector}>
             What I remember

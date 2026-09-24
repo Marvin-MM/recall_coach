@@ -14,8 +14,8 @@ export function memoryPartOf(message: CoachUIMessage): MemoryDataPart | null {
 }
 
 /**
- * Markdown export of the conversation, built entirely in the browser.
- * Nothing is sent to the server (transcripts are never stored server-side).
+ * Markdown export of the conversation, built entirely in the browser from
+ * the messages on screen (nothing extra is sent to the server).
  */
 export function conversationToMarkdown(args: {
   title: string;
