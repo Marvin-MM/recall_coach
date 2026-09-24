@@ -10,6 +10,8 @@ import {
   httpsUrlSchema,
   looksLikeSecret,
   MAINNET_RELAYER_URL,
+  previousTranscriptKeysSchema,
+  transcriptKeySchema,
 } from "@/lib/env-schemas";
 
 const HEX64 = "a".repeat(64);
@@ -30,6 +32,29 @@ describe("delegateKeySchema", () => {
   it("rejects wrong length and non-hex", () => {
     expect(delegateKeySchema.safeParse("ab".repeat(16)).success).toBe(false);
     expect(delegateKeySchema.safeParse("z".repeat(64)).success).toBe(false);
+  });
+});
+
+describe("transcript encryption keys", () => {
+  const key32 = Buffer.alloc(32, 7).toString("base64");
+
+  it("accepts a base64 32-byte key and rejects other sizes or encodings", () => {
+    expect(transcriptKeySchema.parse(key32)).toBe(key32);
+    expect(transcriptKeySchema.safeParse(Buffer.alloc(16, 1).toString("base64")).success).toBe(
+      false,
+    );
+    expect(transcriptKeySchema.safeParse("a".repeat(64)).success).toBe(false); // hex, not base64
+    expect(transcriptKeySchema.safeParse("").success).toBe(false);
+  });
+
+  it("parses retired keys and rejects malformed or duplicate versions", () => {
+    expect(previousTranscriptKeysSchema.parse(`1:${key32}, 2:${key32}`)).toEqual([
+      { version: 1, key: key32 },
+      { version: 2, key: key32 },
+    ]);
+    expect(previousTranscriptKeysSchema.safeParse(`x:${key32}`).success).toBe(false);
+    expect(previousTranscriptKeysSchema.safeParse("1:short").success).toBe(false);
+    expect(previousTranscriptKeysSchema.safeParse(`1:${key32},1:${key32}`).success).toBe(false);
   });
 });
 

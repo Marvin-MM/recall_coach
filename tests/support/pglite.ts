@@ -22,7 +22,7 @@ export async function createTestDb(): Promise<TestDb> {
     client,
     reset: async () => {
       await db.execute(
-        sql`truncate table "recall_events", "memory_events", "coaching_sessions", "user_settings", "session", "account", "verification", "user" cascade`,
+        sql`truncate table "session_messages", "recall_events", "memory_events", "coaching_sessions", "user_settings", "session", "account", "verification", "user" cascade`,
       );
     },
     close: () => client.close(),

@@ -21,6 +21,55 @@ export const delegateKeySchema = z
     message: "MEMWAL_PRIVATE_KEY must be a 32-byte Ed25519 seed encoded as 64 hex characters.",
   });
 
+/** Standard base64 that decodes to exactly 32 bytes (an AES-256 key). */
+function decodesTo32Bytes(v: string): boolean {
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(v) || v.length % 4 !== 0) return false;
+  return Buffer.from(v, "base64").length === 32;
+}
+
+/**
+ * AES-256-GCM key for encrypted transcripts: 32 random bytes, base64
+ * (`openssl rand -base64 32`). Kept as the validated string; decoded by the
+ * transcript keyring (server-only).
+ */
+export const transcriptKeySchema = z.string().trim().refine(decodesTo32Bytes, {
+  message: "TRANSCRIPT_ENCRYPTION_KEY must be 32 bytes, base64-encoded (openssl rand -base64 32).",
+});
+
+export const transcriptKeyVersionSchema = z.coerce.number().int().min(1).max(32_767).default(1);
+
+/**
+ * Retired transcript keys kept for decryption after a rotation:
+ * "1:<base64>,2:<base64>". Versions must be unique.
+ */
+export const previousTranscriptKeysSchema = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    const out: { version: number; key: string }[] = [];
+    for (const entry of v
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean)) {
+      const [rawVersion = "", key = ""] = entry.split(":", 2);
+      const version = Number(rawVersion);
+      if (!Number.isInteger(version) || version < 1 || version > 32_767 || !decodesTo32Bytes(key)) {
+        ctx.addIssue({
+          code: "custom",
+          message:
+            "TRANSCRIPT_PREVIOUS_KEYS entries must look like <version>:<32-byte base64 key>.",
+        });
+        return z.NEVER;
+      }
+      if (out.some((k) => k.version === version)) {
+        ctx.addIssue({ code: "custom", message: `Duplicate transcript key version ${version}.` });
+        return z.NEVER;
+      }
+      out.push({ version, key });
+    }
+    return out;
+  });
+
 export const accountIdSchema = z
   .string()
   .trim()
@@ -126,6 +175,10 @@ export const serverSchema = {
   UPSTASH_REDIS_REST_TOKEN: z.string().min(10),
 
   CRON_SECRET: z.string().min(16),
+
+  TRANSCRIPT_ENCRYPTION_KEY: transcriptKeySchema,
+  TRANSCRIPT_KEY_VERSION: transcriptKeyVersionSchema,
+  TRANSCRIPT_PREVIOUS_KEYS: previousTranscriptKeysSchema.optional(),
 
   // Test-only switches. Rejected in production by `crossFieldProblems`.
   MEMORY_DRIVER: z.enum(["memwal", "fake"]).default("memwal"),

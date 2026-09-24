@@ -96,6 +96,31 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/server/chat/**", "src/server/llm/**", "src/server/memory/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@/server/transcripts/*",
+                      "!@/server/transcripts/thread-history",
+                      "**/transcripts/*",
+                      "!**/transcripts/thread-history"
+                    ],
+                    "message": "Transcripts rule (CLAUDE.md #4): the coach may read ONLY the current thread, via src/server/transcripts/thread-history.ts. Inject writers instead of importing them."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "assist": {

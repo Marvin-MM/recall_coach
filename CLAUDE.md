@@ -8,7 +8,7 @@ Next.js 16 (App Router) + Vercel AI SDK v6 + Groq (Qwen 3.8 27B) + Walrus Memory
 1. **Never fabricate** users, transcripts, screenshots, metrics, blob IDs, bug repros or test results. Real-world data we cannot produce is marked `TODO(human):`.
 2. **Verify before integrating**: check installed `.d.ts` in `node_modules` before using `memwal`, `ai`, `@ai-sdk/groq`, `better-auth`. Installed types win over docs; log discrepancies in `bug-hunt/FINDINGS.md`.
 3. **Delegate key never reaches the browser**: every module importing the memory client starts with `import "server-only";`.
-4. **No transcripts in Postgres**. Postgres = identity, session metadata, memory *metadata* (job/blob IDs, kinds, status, timings). Memory text lives only on Walrus.
+4. **Transcripts are stored encrypted for the user's own viewing.** The coach may read ONLY the current, unfinished session's own transcript as conversation history, through `loadThreadHistory()`. Transcripts from any other session are never read by the coach or any LLM call. Cross-session continuity comes only from Walrus Memory. (Postgres = identity, session metadata, memory *metadata*, and AES-256-GCM-encrypted transcripts in `session_messages`; memory text lives only on Walrus. `src/server/chat|llm|memory` may import only `thread-history.ts` from `src/server/transcripts/`; Biome and a unit test enforce it.)
 5. **Namespaces are derived server-side** from the authenticated user id (`deriveNamespaces`). Never accept namespace/user/account ids from request input.
 6. **Memory failure never breaks chat**: timeout + typed error + degraded path on every memory call.
 7. **Strict TS**: no `any`, no `@ts-ignore` (`@ts-expect-error` with reason only in tests).
@@ -30,6 +30,7 @@ src/server/db/           client, schema, auth-schema, repositories/
 src/server/memory/       MemoryPort + adapters, namespace, format, recall/persist services
 src/server/llm/          model factory, prompts, extraction
 src/server/chat/         chat-service (DI via createChatService(deps))
+src/server/transcripts/  encrypted transcripts: crypto, store, thread-history (the ONLY coach-facing reader)
 src/types/               shared types (memory, api, chat)
 scripts/                 memwal-verify, memwal-stats, evidence-export
 bug-hunt/                LOCAL ONLY (gitignored): probes, findings, reports

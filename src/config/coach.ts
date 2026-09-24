@@ -47,6 +47,12 @@ export const coachLimits = {
   maxTextPartChars: 4000,
   /** Model context: last N user/assistant turns (memory carries the rest). */
   historyTurns: 12,
+  /** History off: the client sends the page's thread (at most this many messages). */
+  maxClientHistory: 24,
+  /** Sessions idle this long are ended (lazily + daily cron). No resume after that. */
+  sessionIdleMs: 2 * 60 * 60 * 1000,
+  /** Session memories view: recall limit per broad query (≤ 50). */
+  sessionMemoriesLimit: 50,
   maxFocusAreas: 5,
   maxFocusAreaChars: 80,
   maxTargetRoleChars: 80,
