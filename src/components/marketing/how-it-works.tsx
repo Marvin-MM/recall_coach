@@ -21,7 +21,7 @@ const STEPS = [
   },
   {
     title: "Memories saved to Walrus",
-    body: "After each reply, short notes — a mistake, a strength, a goal — are encrypted with Seal and stored on Walrus Mainnet. Your transcript isn't.",
+    body: "After each reply, short notes — a mistake, a strength, a goal — are encrypted with Seal and stored on Walrus Mainnet. Your transcript stays yours: encrypted for your History, never read in later sessions.",
     tag: "Walrus Memory",
     Scene: RememberScene,
   },

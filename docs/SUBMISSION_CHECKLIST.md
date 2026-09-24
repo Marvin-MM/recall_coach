@@ -49,6 +49,7 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 - [ ] Replace `TODO(human)` slots in `src/content/before-after.ts` and the article with real, consented material; ask me to pull production evidence (`pnpm memwal:stats --blob-links`) once all testers are done
 - [ ] Publish the article; post on X under the session announcement
 - [ ] Google Cloud Console: OAuth consent screen → *In production*; add the production redirect URI
+- [ ] Vercel: set `TRANSCRIPT_ENCRYPTION_KEY` (new key per environment, backed up) and run `pnpm db:migrate` against production (adds session history)
 
 ## Pre-submission verification
 

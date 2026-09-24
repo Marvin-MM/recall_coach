@@ -72,7 +72,7 @@ const FAQ: { cat: Category; icon: LucideIcon; q: string; a: string }[] = [
     cat: "Memory & privacy",
     icon: ScrollText,
     q: "Do you store my conversations?",
-    a: "No. Transcripts stay in your browser tab; export one as Markdown from the chat if you want to keep it. Our database holds only bookkeeping such as blob ids and timestamps.",
+    a: "Only for you, and only if you want. Transcripts are for you; memories are for the coach. With history on (the default), your conversations are stored encrypted so you can reread them in History and pick up an unfinished session. The coach reads only the current session's messages — across sessions it uses nothing but the short memories on Walrus. Turn history off or delete it in Settings; deleting history doesn't delete memories.",
   },
   {
     cat: "Coaching",

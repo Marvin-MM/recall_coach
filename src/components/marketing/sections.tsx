@@ -263,7 +263,7 @@ export function BeforeAfter() {
           <dl className="grid grid-cols-2 gap-px border border-border bg-border">
             {[
               { k: "Recall before every reply", v: "Profile + relevant notes" },
-              { k: "Saved after every reply", v: "Short notes, not transcripts" },
+              { k: "Saved to Walrus after every reply", v: "Short notes, not transcripts" },
               { k: "Amnesia Mode", v: "Recalls and saves nothing" },
               { k: "If memory is down", v: "Coaching continues, honestly" },
             ].map(({ k, v }) => (
@@ -384,8 +384,12 @@ function NotTranscriptTile() {
           Notes, not transcripts
         </p>
         <h3 className="mt-2 text-lg font-semibold tracking-tight">
-          Short, self-contained notes. Your chat stays in your browser.
+          Transcripts are for you; memories are for the coach.
         </h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your conversation is saved encrypted for your History (or not at all, with history off).
+          Across sessions the coach carries only short notes like this one.
+        </p>
       </div>
       <div className="grid items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
         <div aria-hidden className="space-y-1.5 border border-dashed border-border p-3">
@@ -397,7 +401,7 @@ function NotTranscriptTile() {
             />
           ))}
           <span className="block pt-1 font-mono text-[10px] text-muted-foreground">
-            transcript · not stored
+            transcript · yours, encrypted
           </span>
         </div>
         <ArrowRight

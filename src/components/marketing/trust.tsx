@@ -17,7 +17,11 @@ import { cn } from "@/lib/utils";
 import { LiveStatus } from "./live-status";
 
 const PIPELINE = [
-  { icon: Laptop, name: "You", detail: "Signed in with Google. Your chat stays in this tab." },
+  {
+    icon: Laptop,
+    name: "You",
+    detail: "Signed in with Google. Your transcript is saved encrypted, for you only.",
+  },
   {
     icon: Server,
     name: "Recall server",
@@ -41,8 +45,8 @@ const GUARANTEES = [
   },
   {
     icon: Server,
-    title: "No transcripts on our servers",
-    body: "Our database keeps bookkeeping only: when a note was saved, its kind and its blob id. Export your chat as Markdown any time.",
+    title: "Transcripts are for you",
+    body: "Your history is encrypted (AES-256-GCM) and readable by you. The coach sees only the current session's messages; across sessions it uses memories only. Turn history off any time.",
   },
 ];
 

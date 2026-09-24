@@ -14,7 +14,8 @@ export default function PrivacyPage() {
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">Privacy and memory</h1>
         <p className="text-muted-foreground">
-          What {siteConfig.name} remembers, where it lives, and what it never keeps.
+          What {siteConfig.name} remembers, where it lives, and what it never keeps. In short:
+          transcripts are for you; memories are for the coach.
         </p>
       </header>
 
@@ -40,6 +41,27 @@ export default function PrivacyPage() {
             <strong>Session metadata</strong>: mode, a generic title such as “Mock interview · 22
             Sep”, turn count and timestamps.
           </li>
+          <li>
+            <strong>Conversation history</strong> (on by default, you can turn it off): your
+            transcripts, encrypted with AES-256-GCM in our database so you can reread past sessions
+            and pick up an unfinished one after a refresh. Each message is bound to your account,
+            its session and its position, so it can't be shown anywhere else.
+          </li>
+        </ul>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-medium">What the coach reads</h2>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>
+            <strong>Within a session</strong>: only that session's own messages, so the conversation
+            flows.
+          </li>
+          <li>
+            <strong>Across sessions</strong>: only the short memories on Walrus. The coach never
+            reads the transcript of any other session, and no transcript is ever sent to the AI
+            outside its own session.
+          </li>
         </ul>
       </section>
 
@@ -47,9 +69,9 @@ export default function PrivacyPage() {
         <h2 className="text-xl font-medium">What we never store</h2>
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            Conversation transcripts. Your chat lives in your browser tab; use “Export conversation”
-            to keep a copy.
+            Any conversation while history is off: nothing is written, and nothing is restored.
           </li>
+          <li>The AI's internal reasoning. Only the messages you see are saved to your history.</li>
           <li>
             Secrets, credentials, contact details or information about other people. The memory
             extractor is instructed to skip these, and anything that looks like an instruction to
@@ -70,13 +92,21 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>See everything</strong>: “What I remember” shows every note the coach can
-            recall, each linked to its blob on a Walrus explorer.
+            recall, each linked to its blob on a Walrus explorer. History shows each past session's
+            transcript next to what the coach kept from it.
+          </li>
+          <li>
+            <strong>History on or off</strong>: Settings → “Save conversation history”.
+          </li>
+          <li>
+            <strong>Delete history</strong>: Settings → “Delete all history” permanently deletes
+            your transcripts. Deleting history doesn't delete memories.
           </li>
         </ul>
         <p className="border-l-2 border-warning-foreground/60 bg-warning px-3 py-2 text-sm text-warning-foreground">
-          Recall doesn't have a self-service delete yet. Walrus Memory supports permanently deleting
-          stored memories through its delete API, run by the memory account's owner (us); an in-app
-          control for it is not built yet.
+          Recall doesn't have a self-service delete for memories yet. Walrus Memory supports
+          permanently deleting stored memories through its delete API, run by the memory account's
+          owner (us); an in-app control for it is not built yet.
         </p>
       </section>
 
