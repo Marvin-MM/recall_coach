@@ -24,7 +24,7 @@ const PIPELINE = [
   },
   {
     icon: Server,
-    name: "Recall server",
+    name: "Callback server",
     detail: "Derives your private namespace and holds the delegate key.",
   },
   { icon: Database, name: "Walrus Memory", detail: "Embeds each note and encrypts it with Seal." },
@@ -163,8 +163,8 @@ export function Trust({ accountUrl }: { accountUrl: string }) {
 
         <div className="flex flex-col gap-3 border-l-2 border-warning-foreground/70 bg-warning px-4 py-3 text-sm text-warning-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
-            Recall doesn't have a delete button yet. Walrus Memory can permanently delete stored
-            memories, so this is a gap in Recall, not a limit of the storage.
+            Callback doesn't have a delete button yet. Walrus Memory can permanently delete stored
+            memories, so this is a gap in Callback, not a limit of the storage.
           </p>
           <Link href="/privacy" className="shrink-0 font-medium underline">
             Read the privacy details

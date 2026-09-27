@@ -55,7 +55,7 @@
 }
 
 /*
- * Recall tokens. Light = "paper", dark = "deep sea". Values are hex so the
+ * Callback tokens. Light = "paper", dark = "deep sea". Values are hex so the
  * contrast test (tests/unit/contrast.test.ts) can parse and verify every
  * text/background pair against WCAG AA.
  */

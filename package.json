@@ -1,5 +1,6 @@
 {
-  "name": "recall-coach",
+  "name": "callback-coach",
+  "description": "Callback — the interview coach that remembers. Memory on Walrus Memory (Walrus Mainnet), coaching by Qwen 3.8 27B on Groq.",
   "version": "0.1.0",
   "private": true,
   "type": "module",

@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils";
 type Tone = "auto" | "light" | "dark";
 
 /**
- * Recall wordmark. `auto` swaps with the theme via CSS (no hydration flash);
- * `light` = white mark for dark surfaces (e.g. the deep hero band),
- * `dark` = ink mark for light surfaces.
+ * Wordmark: the ring mark + the product name as live text (so a rename in
+ * `siteConfig.name` is the only change needed). `auto` swaps the mark with the
+ * theme via CSS (no hydration flash); `light` = white for dark surfaces (the
+ * deep hero band), `dark` = ink for light surfaces.
  */
 export function Logo({
   tone = "auto",
@@ -18,43 +19,37 @@ export function Logo({
   className?: string;
   priority?: boolean;
 }) {
-  // In `auto` mode one image is display:none per theme, so the name lives on
-  // the wrapper and both images are decorative.
-  const auto = tone === "auto";
-  const common = { alt: auto ? "" : siteConfig.name, height: 160, priority } as const;
   return (
     <span
-      className={cn("relative inline-flex h-7 items-center", className)}
-      {...(auto ? { role: "img", "aria-label": siteConfig.name } : {})}
+      className={cn(
+        "relative inline-flex h-7 items-center gap-1.5 font-semibold leading-none tracking-[-0.03em]",
+        tone === "light" ? "text-white" : tone === "dark" ? "text-ink" : "text-foreground",
+        className,
+      )}
     >
-      {(tone === "auto" || tone === "dark") && (
-        <Image
-          {...common}
-          src="/brand/logo-light.png"
-          width={389}
-          className={cn("h-full w-auto", tone === "auto" && "dark:hidden")}
-        />
-      )}
-      {(tone === "auto" || tone === "light") && (
-        <Image
-          {...common}
-          src="/brand/logo-dark.png"
-          width={425}
-          className={cn("h-full w-auto", tone === "auto" && "hidden dark:block")}
-        />
-      )}
+      <LogoMark tone={tone} className="aspect-square h-full w-auto" priority={priority} />
+      <span className="text-[1.25em]">{siteConfig.name}</span>
     </span>
   );
 }
 
 /** Mark only (rings), for compact spots. */
-export function LogoMark({ tone = "auto", className }: { tone?: Tone; className?: string }) {
+export function LogoMark({
+  tone = "auto",
+  className,
+  priority = false,
+}: {
+  tone?: Tone;
+  className?: string;
+  priority?: boolean;
+}) {
   return (
     <span className={cn("relative inline-flex size-7", className)}>
       {(tone === "auto" || tone === "dark") && (
         <Image
           src="/brand/mark-ink.png"
           alt=""
+          priority={priority}
           width={192}
           height={192}
           className={cn("size-full", tone === "auto" && "dark:hidden")}
@@ -64,6 +59,7 @@ export function LogoMark({ tone = "auto", className }: { tone?: Tone; className?
         <Image
           src="/brand/mark-white.png"
           alt=""
+          priority={priority}
           width={192}
           height={192}
           className={cn("size-full", tone === "auto" && "hidden dark:block")}

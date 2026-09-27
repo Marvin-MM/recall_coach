@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Recall — interview coach that remembers
+# Callback — the interview coach that remembers
 
 Next.js 16 (App Router) + Vercel AI SDK v6 + Groq (Qwen 3.8 27B) + Walrus Memory (`@mysten-incubation/memwal`) + Better Auth + Drizzle/Postgres. Full spec: `../BUILD_PROMPT.md`. Confirmed SDK signatures: `docs/SDK_NOTES.md`.
 

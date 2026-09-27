@@ -41,7 +41,7 @@ test("capture onboarding, memory chips, inspector and saving summary", async ({
   ]);
   await page.setViewportSize({ width: 1280, height: 860 });
   await page.goto("/coach");
-  const panel = page.getByRole("region", { name: /Recall/ });
+  const panel = page.getByRole("region", { name: /Callback/ });
   await expect(panel).toBeVisible();
 
   if (await panel.getByRole("heading", { name: "What are you preparing for?" }).isVisible()) {

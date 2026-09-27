@@ -10,8 +10,8 @@ export function safeNextPath(value: string | null | undefined): string | null {
   if (!value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return null;
   let path: string;
   try {
-    const url = new URL(value, "https://recall.invalid");
-    if (url.origin !== "https://recall.invalid") return null;
+    const url = new URL(value, "https://callback.invalid");
+    if (url.origin !== "https://callback.invalid") return null;
     path = url.pathname;
   } catch {
     return null;

@@ -15,6 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { NavCoachButton } from "./nav-coach-button";
 import { OpenCoachButton } from "./open-coach-button";
@@ -77,7 +78,11 @@ export function SiteHeader() {
               : "border-border bg-background/85 shadow-[0_8px_30px_-12px_rgb(11_15_20/0.25)] backdrop-blur-md supports-[backdrop-filter]:bg-background/70",
         )}
       >
-        <Link href="/" aria-label="Recall home" className="mr-auto flex items-center py-2">
+        <Link
+          href="/"
+          aria-label={`${siteConfig.name} home`}
+          className="mr-auto flex items-center py-2"
+        >
           <Logo tone={deep ? "light" : "auto"} className="h-6 sm:h-7" priority />
         </Link>
 

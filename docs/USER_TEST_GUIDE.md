@@ -1,12 +1,12 @@
-# Tester guide — help Recall remember you (about 45 minutes over 2 days)
+# Tester guide — help Callback remember you (about 45 minutes over 2 days)
 
-Thank you for testing! Recall is an AI interview coach that keeps short notes about your practice so the next session can pick up where you left off. The hackathon needs real people using it over a few days — your honest use is the evidence.
+Thank you for testing! Callback is an AI interview coach that keeps short notes about your practice so the next session can pick up where you left off. The hackathon needs real people using it over a few days — your honest use is the evidence.
 
 ## Before you start: what gets stored
 
 - When you finish setup you'll be asked to agree to store coaching notes. They are **encrypted** and saved on **Walrus**, a public decentralized storage network. Only this coach can decrypt them.
 - Notes are short summaries like “Skipped the Result in a STAR answer about a missed deadline.” **Transcripts are for you; memories are for the coach**: your conversations are saved **encrypted** so you can reread them in **History**, but the coach never reads an old session's transcript — only the notes. You can turn history off or delete it in **Settings** (deleting history doesn't delete notes).
-- There's **no delete button for notes in Recall yet** (Walrus Memory itself supports permanent deletion by the account owner). Don't share passwords, contact details or information about other people.
+- There's **no delete button for notes in Callback yet** (Walrus Memory itself supports permanent deletion by the account owner). Don't share passwords, contact details or information about other people.
 - The organizers will only see pseudonymized counts (e.g. “user-2: 12 memories”). Nothing you write is published without your written OK.
 
 ## Day 1 — session 1 (≈15 min)

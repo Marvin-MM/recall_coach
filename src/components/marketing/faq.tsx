@@ -35,7 +35,7 @@ const FAQ: { cat: Category; icon: LucideIcon; q: string; a: string }[] = [
   {
     cat: "General",
     icon: HelpCircle,
-    q: "What is Recall?",
+    q: "What is Callback?",
     a: "An interview and skill coach that remembers your target role, how you learn, what tripped you up and how far you've come — across every session and every device.",
   },
   {
@@ -66,7 +66,7 @@ const FAQ: { cat: Category; icon: LucideIcon; q: string; a: string }[] = [
     cat: "Memory & privacy",
     icon: Trash2,
     q: "Can I delete a memory?",
-    a: "Not from inside Recall yet. Walrus Memory supports permanently deleting stored memories, but Recall doesn't have a delete control for it so far. Until it does, setup asks for consent first, and Amnesia Mode lets you practise without saving anything.",
+    a: "Not from inside Callback yet. Walrus Memory supports permanently deleting stored memories, but Callback doesn't have a delete control for it so far. Until it does, setup asks for consent first, and Amnesia Mode lets you practise without saving anything.",
   },
   {
     cat: "Memory & privacy",

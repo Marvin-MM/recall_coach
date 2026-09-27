@@ -13,7 +13,7 @@ import { Launcher } from "./launcher";
 import { initialWidgetState, widgetReducer } from "./state";
 import { NEXT_KEY, OPEN_WIDGET_EVENT, PREFETCH_WIDGET_EVENT } from "./widget-events";
 
-const OPEN_KEY = "recall:widget:open";
+const OPEN_KEY = "callback:widget:open";
 
 const loadPanel = () => import("./coach-panel");
 

@@ -19,8 +19,8 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 
 | Field | Value / source |
 |---|---|
-| Project name | `Recall` (`src/config/site.ts`) |
-| One-liner | “An interview and skill coach that remembers your target role, your past mistakes, how you like to learn, and how far you've come — across every session and every device.” |
+| Project name | `Callback` (`src/config/site.ts`) |
+| One-liner | “An interview and skill coach that remembers your target role, your past mistakes, how you like to learn, and how far you've come — across every session.” (“every device” only once a real cross-device test is recorded in `docs/article/ARTICLE_SOURCES.md`) |
 | Live demo URL | `TODO(human)` — Vercel production URL after deploy |
 | GitHub repo | `TODO(human)` — public repo URL after push |
 | Model / runtime | Qwen 3.8 27B (`qwen/qwen3.8-27b`) on Groq, Vercel AI SDK v6 (`ai@6`, `@ai-sdk/groq@3`), Next.js 16, Vercel Node.js runtime |

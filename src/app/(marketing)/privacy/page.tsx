@@ -104,7 +104,7 @@ export default function PrivacyPage() {
           </li>
         </ul>
         <p className="border-l-2 border-warning-foreground/60 bg-warning px-3 py-2 text-sm text-warning-foreground">
-          Recall doesn't have a self-service delete for memories yet. Walrus Memory supports
+          Callback doesn't have a self-service delete for memories yet. Walrus Memory supports
           permanently deleting stored memories through its delete API, run by the memory account's
           owner (us); an in-app control for it is not built yet.
         </p>

@@ -5,7 +5,7 @@ import { usePrefersReducedMotion } from "@/hooks/use-media-query";
 
 /**
  * Hero model: the memory path as stacked isometric layers.
- *   Walrus (storage nodes)  →  Walrus Memory (encrypted notes)  →  Recall (recap)
+ *   Walrus (storage nodes)  →  Walrus Memory (encrypted notes)  →  Callback (recap)
  * Pure CSS 3D + motion; decorative (aria-hidden) with a text caption outside.
  */
 const TILES = [
@@ -94,7 +94,7 @@ export function MemoryStack() {
           </div>
         </motion.div>
 
-        {/* Layer 3 — Recall: wireframe recap frame with a progress trace */}
+        {/* Layer 3 — Callback: wireframe recap frame with a progress trace */}
         <motion.div className="iso-layer" {...rise(170, 0.8)}>
           <div className="absolute inset-[16%] border border-white/70">
             <svg
@@ -112,7 +112,7 @@ export function MemoryStack() {
               />
             </svg>
             <span className="absolute top-2 left-3 font-mono text-[10px] tracking-[0.18em] text-white/80">
-              RECALL · PROGRESS
+              CALLBACK · PROGRESS
             </span>
             <span className="absolute right-0 bottom-0 size-1.5 translate-x-1/2 translate-y-1/2 bg-white" />
             <span className="absolute top-0 left-0 size-1.5 -translate-x-1/2 -translate-y-1/2 bg-white" />

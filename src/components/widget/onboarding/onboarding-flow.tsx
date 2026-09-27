@@ -393,8 +393,8 @@ export function OnboardingFlow({
                   Walrus, a public decentralized storage network. Only this coach can decrypt them.
                 </li>
                 <li>
-                  There's no delete button for memories in Recall yet, so skip anything you wouldn't
-                  want kept.
+                  There's no delete button for memories in Callback yet, so skip anything you
+                  wouldn't want kept.
                 </li>
                 <li>
                   Transcripts are for you: saved encrypted so you can reread them (turn this off in

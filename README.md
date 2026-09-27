@@ -1,6 +1,6 @@
-# Recall — the interview coach that remembers your last mistake
+# Callback — the interview coach that remembers
 
-Recall is an interview and skill coach that remembers your target role, your past mistakes, how you like to learn, and how far you've come — across every session and every device. Memory lives encrypted on **Walrus Mainnet** via **Walrus Memory**; the coach runs on **Qwen 3.8 27B on Groq** through the **Vercel AI SDK**.
+Callback is an interview and skill coach that remembers your target role, your past mistakes, how you like to learn, and how far you've come — across every session and every device. Memory lives encrypted on **Walrus Mainnet** via **Walrus Memory**; the coach runs on **Qwen 3.8 27B on Groq** through the **Vercel AI SDK**.
 
 > Built for the Walrus Foundation “Chatbots That Remember” hackathon (deadline 9 Oct 2026, 14:00 UTC).
 
@@ -151,7 +151,7 @@ E2E runs `next dev` with test-only drivers. Create `.env.e2e` from `.env.example
 
 ## Known limitations
 
-- **No in-app delete for memories yet** (transcripts can be deleted in Settings): Walrus Memory supports permanent deletion through its Security Delete API (wallet-authenticated, run by the memory account owner); Recall doesn't expose it to users yet.
+- **No in-app delete for memories yet** (transcripts can be deleted in Settings): Walrus Memory supports permanent deletion through its Security Delete API (wallet-authenticated, run by the memory account owner); Callback doesn't expose it to users yet.
 - **Recall is semantic, not exact:** the profile is chosen as the newest snapshot among a few candidates.
 - **Mainnet saves are slow** (35–82 s measured) and a job can report `done` slightly before it is recallable — see [docs/SDK_NOTES.md](docs/SDK_NOTES.md).
 

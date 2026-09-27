@@ -64,9 +64,9 @@ test.describe("widget: keyboard + signed out", () => {
     const launcher = page.getByRole("button", { name: /Open interview coach/ });
     await launcher.focus();
     await page.keyboard.press("Control+k");
-    const dialog = page.getByRole("dialog", { name: /Recall/ });
+    const dialog = page.getByRole("dialog", { name: /Callback/ });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("heading", { name: /Recall/ })).toBeFocused();
+    await expect(dialog.getByRole("heading", { name: /Callback/ })).toBeFocused();
     await expect(dialog.getByRole("button", { name: "Continue with Google" })).toBeVisible();
     await expectAccessible(page, "widget signed out", '[role="dialog"]');
     await page.keyboard.press("Escape");
@@ -83,7 +83,7 @@ test.describe("widget: keyboard + signed out", () => {
     // There is no separate admin login: /admin and /admin/login lead to sign-in, then the evidence page.
     await page.goto("/admin/login");
     await expect(page).toHaveURL(/next=%2Fadmin%2Fevidence/);
-    await expect(page.getByRole("dialog", { name: /Recall/ })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: /Callback/ })).toBeVisible();
   });
 });
 
@@ -96,7 +96,7 @@ test.describe("full coaching flow", () => {
     await signIn(context, baseURL ?? "", { name: "Ada Tester" });
     await page.goto("/");
     await openWidget(page);
-    const dialog = page.getByRole("dialog", { name: /Recall/ });
+    const dialog = page.getByRole("dialog", { name: /Callback/ });
 
     // Step 1 — validation, then fill.
     await expect(
@@ -177,7 +177,7 @@ test.describe("full coaching flow", () => {
     await signIn(context, baseURL ?? "", { onboarded: true, name: "Grace Tester" });
     await page.goto("/");
     await openWidget(page);
-    const dialog = page.getByRole("dialog", { name: /Recall/ });
+    const dialog = page.getByRole("dialog", { name: /Callback/ });
 
     await dialog.getByRole("button", { name: /Drill a weak spot/ }).click();
     await dialog
@@ -211,7 +211,7 @@ test.describe("full coaching flow", () => {
     await signIn(context, baseURL ?? "", { onboarded: true, name: "Hopper Tester" });
     await page.goto("/");
     await openWidget(page);
-    const dialog = page.getByRole("dialog", { name: /Recall/ });
+    const dialog = page.getByRole("dialog", { name: /Callback/ });
     const textbox = dialog.getByRole("textbox", { name: "Message the coach" });
     const FIRST = "I want to practise STAR answers with a measurable result";
 
@@ -289,7 +289,7 @@ test.describe("full coaching flow", () => {
     await signIn(context, baseURL ?? "", { onboarded: true });
     await page.goto("/");
     await openWidget(page);
-    const dialog = page.getByRole("dialog", { name: /Recall/ });
+    const dialog = page.getByRole("dialog", { name: /Callback/ });
     await dialog.getByRole("button", { name: "Coach menu" }).click();
     await page.getByRole("menuitem", { name: "Settings" }).click();
     const settings = page.getByRole("dialog", { name: "Settings" });
@@ -326,7 +326,7 @@ test.describe("full coaching flow", () => {
     await signIn(context, baseURL ?? "", { onboarded: true });
     await page.goto("/");
     await openWidget(page);
-    const dialog = page.getByRole("dialog", { name: /Recall/ });
+    const dialog = page.getByRole("dialog", { name: /Callback/ });
     await dialog.getByRole("switch", { name: /Start without memory/ }).click();
     await dialog.getByRole("button", { name: /Just chat/ }).click();
     await expect(dialog.getByText("Amnesia Mode: nothing is recalled or saved.")).toBeVisible();
@@ -340,7 +340,7 @@ test.describe("full coaching flow", () => {
   test("/coach full page works for signed-in users", async ({ page, context, baseURL }) => {
     await signIn(context, baseURL ?? "", { onboarded: true });
     await page.goto("/coach");
-    await expect(page.getByRole("region", { name: /Recall/ })).toBeVisible();
+    await expect(page.getByRole("region", { name: /Callback/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Start a session/ })).toBeVisible();
     await expectAccessible(page, "coach page");
   });

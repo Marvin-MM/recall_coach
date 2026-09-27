@@ -61,7 +61,7 @@ export async function openWidget(page: Page): Promise<void> {
   // Wait for hydration so the click reaches React's handler.
   await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: /Open interview coach/ }).click();
-  await expect(page.getByRole("dialog", { name: /Recall/ })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: /Callback/ })).toBeVisible();
 }
 
 export const test = base;
