@@ -27,6 +27,18 @@ function contrast(a: string, b: string): number {
   return (l1 + 0.05) / (l2 + 0.05);
 }
 
+/** `fg` at `alpha` opacity over opaque `bg`, as #rrggbb. */
+function blend(fg: string, bg: string, alpha: number): string {
+  const ch = (hex: string, i: number) => Number.parseInt(hex.slice(i, i + 2), 16);
+  return `#${[1, 3, 5]
+    .map((i) =>
+      Math.round(ch(fg, i) * alpha + ch(bg, i) * (1 - alpha))
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+}
+
 const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
 const themes = { light: tokens(css, ":root"), dark: tokens(css, ".deep") };
 
@@ -71,6 +83,17 @@ describe.each(Object.entries(themes))("%s theme contrast (WCAG 2.1 AA)", (_name,
   it.each(UI_PAIRS)("%s on %s ≥ 3:1", (fg, bg) => {
     expect(contrast(t[fg] ?? "", t[bg] ?? "")).toBeGreaterThanOrEqual(3);
   });
+
+  // Destructive buttons/badges: `text-destructive` on `bg-destructive/10` (light)
+  // or `/20` (dark), composited over the surface they sit on.
+  it.each(["background", "card", "popover"])(
+    "destructive on tinted destructive over %s ≥ 4.5:1",
+    (surface) => {
+      const fg = t.destructive ?? "";
+      const alpha = _name === "light" ? 0.1 : 0.2;
+      expect(contrast(fg, blend(fg, t[surface] ?? "", alpha))).toBeGreaterThanOrEqual(4.5);
+    },
+  );
 
   it("never puts white text on Sui blue", () => {
     expect(t["primary-foreground"]).not.toBe("#ffffff");

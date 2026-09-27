@@ -3,7 +3,7 @@ export const siteConfig = {
   name: "Callback",
   tagline: "The interview coach that remembers.",
   description:
-    "Practice with an AI coach that remembers your target role, how you learn, and what tripped you up — across every session and device. Memory stored encrypted on Walrus.",
+    "Practice with an AI coach that remembers your target role, how you learn, and what tripped you up — across every session. Memory stored encrypted on Walrus.",
   /** Cookie prefix for Better Auth cookies (kept stable across renames). */
   authCookiePrefix: "recall",
   /** Public profile links; empty ones are hidden in the footer. */

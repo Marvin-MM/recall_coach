@@ -36,7 +36,7 @@ const FAQ: { cat: Category; icon: LucideIcon; q: string; a: string }[] = [
     cat: "General",
     icon: HelpCircle,
     q: "What is Callback?",
-    a: "An interview and skill coach that remembers your target role, how you learn, what tripped you up and how far you've come — across every session and every device.",
+    a: "An interview and skill coach that remembers your target role, how you learn, what tripped you up and how far you've come — across every session.",
   },
   {
     cat: "General",

@@ -1,6 +1,6 @@
 # Callback — the interview coach that remembers
 
-Callback is an interview and skill coach that remembers your target role, your past mistakes, how you like to learn, and how far you've come — across every session and every device. Memory lives encrypted on **Walrus Mainnet** via **Walrus Memory**; the coach runs on **Qwen 3.8 27B on Groq** through the **Vercel AI SDK**.
+Callback is an interview and skill coach that remembers your target role, your past mistakes, how you like to learn, and how far you've come — across every session. Memory lives encrypted on **Walrus Mainnet** via **Walrus Memory**; the coach runs on **Qwen 3.8 27B on Groq** through the **Vercel AI SDK**.
 
 > Built for the Walrus Foundation “Chatbots That Remember” hackathon (deadline 9 Oct 2026, 14:00 UTC).
 

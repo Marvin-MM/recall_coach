@@ -55,7 +55,7 @@ export function SignInCard({ callbackPath }: { callbackPath: string }) {
         </h3>
         <p className="text-muted-foreground">
           Sign in so I can remember your target role, how you like to learn and what tripped you up
-          last time — on any device.
+          last time.
         </p>
       </div>
 
