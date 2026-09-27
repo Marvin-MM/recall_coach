@@ -18,6 +18,7 @@
       "!test-results",
       "!drizzle/meta",
       "!bug-hunt/results",
+      "!eval/results",
       "!bug-hunt/existing-issues.json",
       "!next-env.d.ts"
     ]

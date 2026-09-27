@@ -102,6 +102,17 @@ describe("buildSystemPrompt", () => {
   );
 });
 
+describe("rubric", () => {
+  it("asks for placeholders instead of invented figures in the fix (eval 20260927-1213 finding)", () => {
+    for (const memoryEnabled of [true, false]) {
+      const p = buildSystemPrompt({ ...base, memoryEnabled });
+      expect(p).toContain("**Fix next time:**");
+      expect(p).toMatch(/never invent numbers, names, outcomes or details the user didn't give/);
+      expect(p).not.toMatch(/latency 40%/);
+    }
+  });
+});
+
 describe("helpers", () => {
   it("escapeMemoryText neutralizes angle brackets", () => {
     expect(escapeMemoryText("<a>\n b")).toBe("‹a› b");

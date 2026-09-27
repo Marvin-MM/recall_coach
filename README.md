@@ -134,6 +134,12 @@ pnpm run ci              # lint + typecheck + test + build
 
 E2E runs `next dev` with test-only drivers. Create `.env.e2e` from `.env.example` with a **throwaway** `DATABASE_URL`/`DATABASE_URL_UNPOOLED`, `MEMORY_DRIVER=fake`, `LLM_DRIVER=fake`, `E2E_AUTH_SECRET=<random>`, `MEMWAL_NAMESPACE_PREFIX=coach-e2e-v1`, and `NEXT_PUBLIC_APP_URL=BETTER_AUTH_URL=http://localhost:3100`.
 
+## Memory eval
+
+`pnpm eval:memory` runs three synthetic personas through the real chat service on Mainnet (throwaway `callback-eval-<runId>` namespaces, ≤ 30 writes, ≤ 20 relayer requests/min): a scripted first session, then six probe questions each in fresh threads, once in Amnesia Mode and once with memory. Scoring is deterministic keyword matching; probes and keywords are fixed in `scripts/eval/personas.ts`. `pnpm eval:memory --dry-run` runs the same harness offline.
+
+Latest run ([`eval/results/20260927-1213/SUMMARY.md`](eval/results/20260927-1213/SUMMARY.md), `qwen/qwen3.8-27b`, SDK 0.1.8): **Amnesia 0/18, memory 16/18** by the keyword score, **14/18** after reading the replies (two passes matched only inside the repeated assignment). Median save 40 s, median recall 2.2 s per turn.
+
 ## Deployment (Vercel)
 
 1. Push to a public GitHub repo (CI runs `pnpm run ci` and a gitleaks scan on every PR).

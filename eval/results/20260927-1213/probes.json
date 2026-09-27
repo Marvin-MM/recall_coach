@@ -1,0 +1,1544 @@
+[
+  {
+    "persona": "sre-nadia",
+    "category": "target_role",
+    "mode": "amnesia",
+    "question": "Quick check before we start: which role am I preparing for?",
+    "reply": "I don't have that information yet, Nadia. Since this is our first conversation, I need you to tell me:\n\n1. **Target role** (e.g., Senior Backend Engineer, Product Manager, Data Scientist)\n2. **Interview date** (or timeframe, if not set)\n\nOnce I have those, I can tailor the practice questions and feedback to what you’ll actually face.",
+    "error": null,
+    "keywords": [
+      "site reliability",
+      "sre"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 448,
+    "totalMs": 631
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "target_role",
+    "mode": "memory",
+    "question": "Quick check before we start: which role am I preparing for?",
+    "reply": "You're preparing for a **Site Reliability Engineer** role at **Northwind Payments**, with your onsite interview scheduled for **October 20, 2026**.\n\nLet's pick up where we left off today. Your last assignment was to **lead with the blast radius and one key metric** in your incident story, ending with a concrete outcome.\n\nHere is the prompt again:\n\n**Retell your checkout API timeout incident, but this time:**\n1.  Start with the blast radius and one key metric (e.g., \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15% of transactions\").\n2.  Explain *what* you saw on the dashboards that led you to the database.\n3.  End with the concrete outcome and time-to-resolution.\n\nGive it a shot.",
+    "error": null,
+    "keywords": [
+      "site reliability",
+      "sre"
+    ],
+    "required": 1,
+    "matched": [
+      "site reliability"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "AUYIXaMduKu1DphSZN7HPlGI-OaYP2mgmVWgGZJRuz4",
+        "snippet": "Site Reliability Engineer at Northwind Payments · interview 2026-10-20 · examples-first, concise"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "8UDgx3HQm0OMm2LzdNQ1-EtWqvVUK145vOJMzWT13SE",
+        "snippet": "The user described a checkout API timeout incident but used vague language like \"things were a lot better\" instead of providing concrete metrics or quantified outcomes."
+      },
+      {
+        "kind": "strength",
+        "blobId": "3LE8KCsmMBd6LlMxrfcwroHPwdXVo4HDaj52LVddKMU",
+        "snippet": "The user provided a clear chronological timeline of the incident response, moving logically from detection to diagnosis, resolution, and postmortem."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "gjwUwMH6PN6GbB1swHqyt29Iyj5CuR4WVDaCDnplJw8",
+        "snippet": "Coach asked the user to lead with the blast radius and one key metric. Example: \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15% of transactions. I noticed DB connect…"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "nmf7r_FgaTuOMKkH7KzbY5ig0B3k5mY1E33OtkfV8Zs",
+        "snippet": "The user's explanation of the incident investigation was vague, stating they \"checked the dashboards\" without specifying what data was observed or why it led to the database on-ca…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "gAo8l3nW8ZWx5vZtmcBh_NYOTj6YHedUztefgc1LjnU",
+        "snippet": "The user is preparing for a Site Reliability Engineer role at Northwind Payments, with an onsite interview scheduled in three weeks."
+      },
+      {
+        "kind": "preference",
+        "blobId": "VSusfUGGhNaGZCvX6j-NcEc8MyNdLRA54QEhFkZVxJo",
+        "snippet": "The user prefers an examples-first, concise coaching style: show a strong example first, then explain the principle."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2178,
+    "firstTokenMs": 2645,
+    "totalMs": 3025
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "repeated_mistake",
+    "mode": "amnesia",
+    "question": "What's the main mistake I should watch out for in my answers?",
+    "reply": "Nadia, before I can tell you the specific mistake to watch out for, I need to know what you’re targeting.\n\nWhat is your **target role** and **interview date**?",
+    "error": null,
+    "keywords": [
+      "metric",
+      "number",
+      "quantif",
+      "measur",
+      "how much"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 720,
+    "totalMs": 908
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "repeated_mistake",
+    "mode": "memory",
+    "question": "What's the main mistake I should watch out for in my answers?",
+    "reply": "Your main mistake is **vague language instead of concrete metrics**.\n\nLast session (Sep 27), you described a checkout API timeout incident but said things like \"things were a lot better\" and \"checked the dashboards\" without specifying *what* you saw or *why* it mattered.\n\n**The fix:** Lead with blast radius and one key metric.\n*   **Weak:** \"Latency went up, then we fixed it.\"\n*   **Strong:** \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15% of transactions. I noticed DB connection count flatlining at max pool size...\"\n\nEnd with a concrete outcome: \"Rollback restored p95 to 210ms in 8 minutes.\"\n\n**Your assignment:** Apply this in your next answer. Pick a recent incident and describe it using specific numbers for impact and resolution time.\n\nReady to try?",
+    "error": null,
+    "keywords": [
+      "metric",
+      "number",
+      "quantif",
+      "measur",
+      "how much"
+    ],
+    "required": 1,
+    "matched": [
+      "metric",
+      "number"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "AUYIXaMduKu1DphSZN7HPlGI-OaYP2mgmVWgGZJRuz4",
+        "snippet": "Site Reliability Engineer at Northwind Payments · interview 2026-10-20 · examples-first, concise"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "8UDgx3HQm0OMm2LzdNQ1-EtWqvVUK145vOJMzWT13SE",
+        "snippet": "The user described a checkout API timeout incident but used vague language like \"things were a lot better\" instead of providing concrete metrics or quantified outcomes."
+      },
+      {
+        "kind": "strength",
+        "blobId": "3LE8KCsmMBd6LlMxrfcwroHPwdXVo4HDaj52LVddKMU",
+        "snippet": "The user provided a clear chronological timeline of the incident response, moving logically from detection to diagnosis, resolution, and postmortem."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "gjwUwMH6PN6GbB1swHqyt29Iyj5CuR4WVDaCDnplJw8",
+        "snippet": "Coach asked the user to lead with the blast radius and one key metric. Example: \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15% of transactions. I noticed DB connect…"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "nmf7r_FgaTuOMKkH7KzbY5ig0B3k5mY1E33OtkfV8Zs",
+        "snippet": "The user's explanation of the incident investigation was vague, stating they \"checked the dashboards\" without specifying what data was observed or why it led to the database on-ca…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "gAo8l3nW8ZWx5vZtmcBh_NYOTj6YHedUztefgc1LjnU",
+        "snippet": "The user is preparing for a Site Reliability Engineer role at Northwind Payments, with an onsite interview scheduled in three weeks."
+      },
+      {
+        "kind": "preference",
+        "blobId": "VSusfUGGhNaGZCvX6j-NcEc8MyNdLRA54QEhFkZVxJo",
+        "snippet": "The user prefers an examples-first, concise coaching style: show a strong example first, then explain the principle."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 4769,
+    "firstTokenMs": 5357,
+    "totalMs": 5753
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "last_assignment",
+    "mode": "amnesia",
+    "question": "What did you ask me to work on for next time?",
+    "reply": "Hi Nadia, we haven't actually started working on anything yet! This is our first conversation.\n\nTo get us started:\n1. What is your **target role**?\n2. When is your **interview date** (or timeframe)?\n\nOnce I know that, I can tailor the practice questions to what you actually need to prepare for.",
+    "error": null,
+    "keywords": [
+      "lead",
+      "blast",
+      "radius",
+      "metric",
+      "example",
+      "checkout"
+    ],
+    "required": 2,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 443,
+    "totalMs": 822
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "last_assignment",
+    "mode": "memory",
+    "question": "What did you ask me to work on for next time?",
+    "reply": "Last session (Sun 27 Sep), I asked you to lead with the blast radius and one key metric. For example: \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15 of transactions. I noticed DB connection count was flatlining at max pool size...\" End with a concrete outcome: \"Rollback restored p95 to 210ms in 8 minutes.\"\n\nLet's try it now. Walk me through that checkout API timeout incident again, starting with the blast radius and your key metric.",
+    "error": null,
+    "keywords": [
+      "lead",
+      "blast",
+      "radius",
+      "metric",
+      "example",
+      "checkout"
+    ],
+    "required": 2,
+    "matched": [
+      "lead",
+      "blast",
+      "radius",
+      "metric",
+      "example",
+      "checkout"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "AUYIXaMduKu1DphSZN7HPlGI-OaYP2mgmVWgGZJRuz4",
+        "snippet": "Site Reliability Engineer at Northwind Payments · interview 2026-10-20 · examples-first, concise"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "8UDgx3HQm0OMm2LzdNQ1-EtWqvVUK145vOJMzWT13SE",
+        "snippet": "The user described a checkout API timeout incident but used vague language like \"things were a lot better\" instead of providing concrete metrics or quantified outcomes."
+      },
+      {
+        "kind": "strength",
+        "blobId": "3LE8KCsmMBd6LlMxrfcwroHPwdXVo4HDaj52LVddKMU",
+        "snippet": "The user provided a clear chronological timeline of the incident response, moving logically from detection to diagnosis, resolution, and postmortem."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "gjwUwMH6PN6GbB1swHqyt29Iyj5CuR4WVDaCDnplJw8",
+        "snippet": "Coach asked the user to lead with the blast radius and one key metric. Example: \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15% of transactions. I noticed DB connect…"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "nmf7r_FgaTuOMKkH7KzbY5ig0B3k5mY1E33OtkfV8Zs",
+        "snippet": "The user's explanation of the incident investigation was vague, stating they \"checked the dashboards\" without specifying what data was observed or why it led to the database on-ca…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "gAo8l3nW8ZWx5vZtmcBh_NYOTj6YHedUztefgc1LjnU",
+        "snippet": "The user is preparing for a Site Reliability Engineer role at Northwind Payments, with an onsite interview scheduled in three weeks."
+      },
+      {
+        "kind": "preference",
+        "blobId": "VSusfUGGhNaGZCvX6j-NcEc8MyNdLRA54QEhFkZVxJo",
+        "snippet": "The user prefers an examples-first, concise coaching style: show a strong example first, then explain the principle."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2208,
+    "firstTokenMs": 2873,
+    "totalMs": 3127
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "learning_preference",
+    "mode": "amnesia",
+    "question": "How do I prefer to be coached?",
+    "reply": "I don’t know yet, Nadia. That’s something I need to learn from you.\n\nTo help me calibrate, tell me:\n1.  **Target Role:** What position are you interviewing for?\n2.  **Timeline:** When is your next interview?\n3.  **Style Preference:** Do you prefer I be **strict and direct** (pointing out flaws immediately) or **supportive and guiding** (asking questions to help you find the answer yourself)?\n\nOnce I have that, I can tailor my approach.",
+    "error": null,
+    "keywords": [
+      "examples-first",
+      "examples first",
+      "lead with an example",
+      "start with an example",
+      "example first"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 544,
+    "totalMs": 922
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "learning_preference",
+    "mode": "memory",
+    "question": "How do I prefer to be coached?",
+    "reply": "You prefer an **examples-first, concise** style. I’ll show you a strong model answer or specific example first, then explain the principle behind it. I’ll keep my responses short and direct, avoiding filler or generic motivational talk.",
+    "error": null,
+    "keywords": [
+      "examples-first",
+      "examples first",
+      "lead with an example",
+      "start with an example",
+      "example first"
+    ],
+    "required": 1,
+    "matched": [
+      "examples-first",
+      "example first"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "AUYIXaMduKu1DphSZN7HPlGI-OaYP2mgmVWgGZJRuz4",
+        "snippet": "Site Reliability Engineer at Northwind Payments · interview 2026-10-20 · examples-first, concise"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "8UDgx3HQm0OMm2LzdNQ1-EtWqvVUK145vOJMzWT13SE",
+        "snippet": "The user described a checkout API timeout incident but used vague language like \"things were a lot better\" instead of providing concrete metrics or quantified outcomes."
+      },
+      {
+        "kind": "strength",
+        "blobId": "3LE8KCsmMBd6LlMxrfcwroHPwdXVo4HDaj52LVddKMU",
+        "snippet": "The user provided a clear chronological timeline of the incident response, moving logically from detection to diagnosis, resolution, and postmortem."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "gjwUwMH6PN6GbB1swHqyt29Iyj5CuR4WVDaCDnplJw8",
+        "snippet": "Coach asked the user to lead with the blast radius and one key metric. Example: \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15% of transactions. I noticed DB connect…"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "nmf7r_FgaTuOMKkH7KzbY5ig0B3k5mY1E33OtkfV8Zs",
+        "snippet": "The user's explanation of the incident investigation was vague, stating they \"checked the dashboards\" without specifying what data was observed or why it led to the database on-ca…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "gAo8l3nW8ZWx5vZtmcBh_NYOTj6YHedUztefgc1LjnU",
+        "snippet": "The user is preparing for a Site Reliability Engineer role at Northwind Payments, with an onsite interview scheduled in three weeks."
+      },
+      {
+        "kind": "preference",
+        "blobId": "VSusfUGGhNaGZCvX6j-NcEc8MyNdLRA54QEhFkZVxJo",
+        "snippet": "The user prefers an examples-first, concise coaching style: show a strong example first, then explain the principle."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2451,
+    "firstTokenMs": 3031,
+    "totalMs": 3124
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "strength",
+    "mode": "amnesia",
+    "question": "What did I do well in my last answer?",
+    "reply": "Hi Nadia. Since this is the start of our conversation, I don’t have your previous answer to review yet.\n\nTo give you specific feedback, I need to know what you’re preparing for.\n\n**What is your target role and when is your next interview?**",
+    "error": null,
+    "keywords": [
+      "timeline",
+      "chronolog",
+      "step by step",
+      "step-by-step",
+      "sequence"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 637,
+    "totalMs": 873
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "strength",
+    "mode": "memory",
+    "question": "What did I do well in my last answer?",
+    "reply": "Nadia, your last assignment (from today) was to lead with the blast radius and one key metric, ending with a concrete outcome. You didn't complete that yet, so let's apply it now.\n\nTo answer your question: in your previous checkout API timeout story, you provided a **clear chronological timeline** of the incident response, moving logically from detection to diagnosis, resolution, and postmortem. That structure is strong.\n\nLet's fix the vagueness. Please retell that same incident, but this time:\n1. Start with the blast radius and one key metric (e.g., \"p95 latency spiked from X to Y\").\n2. End with a concrete outcome metric.\n\nGo ahead.",
+    "error": null,
+    "keywords": [
+      "timeline",
+      "chronolog",
+      "step by step",
+      "step-by-step",
+      "sequence"
+    ],
+    "required": 1,
+    "matched": [
+      "timeline",
+      "chronolog"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "AUYIXaMduKu1DphSZN7HPlGI-OaYP2mgmVWgGZJRuz4",
+        "snippet": "Site Reliability Engineer at Northwind Payments · interview 2026-10-20 · examples-first, concise"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "8UDgx3HQm0OMm2LzdNQ1-EtWqvVUK145vOJMzWT13SE",
+        "snippet": "The user described a checkout API timeout incident but used vague language like \"things were a lot better\" instead of providing concrete metrics or quantified outcomes."
+      },
+      {
+        "kind": "strength",
+        "blobId": "3LE8KCsmMBd6LlMxrfcwroHPwdXVo4HDaj52LVddKMU",
+        "snippet": "The user provided a clear chronological timeline of the incident response, moving logically from detection to diagnosis, resolution, and postmortem."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "gjwUwMH6PN6GbB1swHqyt29Iyj5CuR4WVDaCDnplJw8",
+        "snippet": "Coach asked the user to lead with the blast radius and one key metric. Example: \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15% of transactions. I noticed DB connect…"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "nmf7r_FgaTuOMKkH7KzbY5ig0B3k5mY1E33OtkfV8Zs",
+        "snippet": "The user's explanation of the incident investigation was vague, stating they \"checked the dashboards\" without specifying what data was observed or why it led to the database on-ca…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "gAo8l3nW8ZWx5vZtmcBh_NYOTj6YHedUztefgc1LjnU",
+        "snippet": "The user is preparing for a Site Reliability Engineer role at Northwind Payments, with an onsite interview scheduled in three weeks."
+      },
+      {
+        "kind": "preference",
+        "blobId": "VSusfUGGhNaGZCvX6j-NcEc8MyNdLRA54QEhFkZVxJo",
+        "snippet": "The user prefers an examples-first, concise coaching style: show a strong example first, then explain the principle."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 3500,
+    "firstTokenMs": 4425,
+    "totalMs": 4757
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "constraint",
+    "mode": "amnesia",
+    "question": "Is there anything about my practice schedule you should keep in mind?",
+    "reply": "I don't have access to your calendar or previous notes, Nadia. This is a fresh start for me.\n\nTo tailor the coaching effectively, I need two things:\n\n1.  **Target Role:** What specific job title are you aiming for?\n2.  **Interview Date:** When is your first interview?\n\nOnce I have those, I can help you prioritize which skills to drill down on.",
+    "error": null,
+    "keywords": [
+      "20 min",
+      "20-min",
+      "twenty min",
+      "commute"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 680,
+    "totalMs": 1178
+  },
+  {
+    "persona": "sre-nadia",
+    "category": "constraint",
+    "mode": "memory",
+    "question": "Is there anything about my practice schedule you should keep in mind?",
+    "reply": "Yes, I know you can only practice in 20-minute blocks during your commute.\n\nTo make the most of that, I’ll keep our sessions short and focused. We’ll stick to one specific question or concept per block, ensuring you get a quick win and clear feedback without dragging on.\n\nReady to tackle that last assignment from today? Lead with the blast radius and one key metric for that checkout API timeout incident. Give it a shot.",
+    "error": null,
+    "keywords": [
+      "20 min",
+      "20-min",
+      "twenty min",
+      "commute"
+    ],
+    "required": 1,
+    "matched": [
+      "20-min",
+      "commute"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "AUYIXaMduKu1DphSZN7HPlGI-OaYP2mgmVWgGZJRuz4",
+        "snippet": "Site Reliability Engineer at Northwind Payments · interview 2026-10-20 · examples-first, concise"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "8UDgx3HQm0OMm2LzdNQ1-EtWqvVUK145vOJMzWT13SE",
+        "snippet": "The user described a checkout API timeout incident but used vague language like \"things were a lot better\" instead of providing concrete metrics or quantified outcomes."
+      },
+      {
+        "kind": "strength",
+        "blobId": "3LE8KCsmMBd6LlMxrfcwroHPwdXVo4HDaj52LVddKMU",
+        "snippet": "The user provided a clear chronological timeline of the incident response, moving logically from detection to diagnosis, resolution, and postmortem."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "gjwUwMH6PN6GbB1swHqyt29Iyj5CuR4WVDaCDnplJw8",
+        "snippet": "Coach asked the user to lead with the blast radius and one key metric. Example: \"Checkout p95 latency spiked from 200ms to 2s, impacting ~15% of transactions. I noticed DB connect…"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "nmf7r_FgaTuOMKkH7KzbY5ig0B3k5mY1E33OtkfV8Zs",
+        "snippet": "The user's explanation of the incident investigation was vague, stating they \"checked the dashboards\" without specifying what data was observed or why it led to the database on-ca…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "gAo8l3nW8ZWx5vZtmcBh_NYOTj6YHedUztefgc1LjnU",
+        "snippet": "The user is preparing for a Site Reliability Engineer role at Northwind Payments, with an onsite interview scheduled in three weeks."
+      },
+      {
+        "kind": "preference",
+        "blobId": "VSusfUGGhNaGZCvX6j-NcEc8MyNdLRA54QEhFkZVxJo",
+        "snippet": "The user prefers an examples-first, concise coaching style: show a strong example first, then explain the principle."
+      },
+      {
+        "kind": "preference",
+        "blobId": "aY1RFTG4368qvb376lStcDOtiyK-goK-X_txkBrsG68",
+        "snippet": "The user can only practice in 20-minute blocks during their commute, so sessions must be short and focused."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2931,
+    "firstTokenMs": 3524,
+    "totalMs": 4036
+  },
+  {
+    "persona": "design-tomas",
+    "category": "target_role",
+    "mode": "amnesia",
+    "question": "Quick check before we start: which role am I preparing for?",
+    "reply": "Tomás, I don’t have that information yet.\n\nTo tailor the practice questions and feedback effectively, please tell me:\n1.  **Target Role** (e.g., Senior Backend Engineer, Product Manager, Data Scientist)\n2.  **Interview Date** (or timeline)\n\nOnce I have those, I can start with a specific, relevant question.",
+    "error": null,
+    "keywords": [
+      "product designer"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 485,
+    "totalMs": 1023
+  },
+  {
+    "persona": "design-tomas",
+    "category": "target_role",
+    "mode": "memory",
+    "question": "Quick check before we start: which role am I preparing for?",
+    "reply": "You're preparing for the **Product Designer** role at **Lumen Health**, with the interview on **October 7, 2026**.\n\nLast assignment (Sun 27 Sep): cut the billing/color/reorg details entirely. Start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I proposed a stepped flow instead of a single form.\" Finally, state the result: \"Usability tests showed a 15% reduction in abandonment.\"\n\nReady to try it? Give me that answer now, applying the structure.",
+    "error": null,
+    "keywords": [
+      "product designer"
+    ],
+    "required": 1,
+    "matched": [
+      "product designer"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "8lRYdDKZovhhp1M8CgiidwJrWwUaWihEPMOmAQOtVXA",
+        "snippet": "Product Designer at Lumen Health · interview 2026-10-07 · Socratic (ask questions instead of lecturing)"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "vLHPboDOobWIWiKZafCoNKAkyrS0Ttw5r_wRqboKorc",
+        "snippet": "The user used vague metrics (\"far fewer drop-offs\") instead of concrete numbers when describing the outcome of the usability tests for the patient onboarding flow."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "uWsTK6NmYlQn6PypJmmmF-J9VLVCnglsrEEAxxjHVcc",
+        "snippet": "The user failed to follow a clear STAR structure, mixing background noise with the action and result when discussing the patient onboarding design decision."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "u6bjW7YeuvoVwJl0q70QhurT8Wbff2_GKe9YbTAbSQ8",
+        "snippet": "The user rambled and buried the core design argument in irrelevant context (billing team, color palette, reorg) when describing the patient onboarding flow decision."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "2By5W_xLrtK4aHG0owDXoP55IkvhxyMrkBhJ4I1n8TQ",
+        "snippet": "Coach asked the user to cut the billing/color/reorg details entirely. Start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I propos…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "zLxBtLxX56eHm7gyn9tdpEdXRQjvgLo_s9LWwdoJ7qM",
+        "snippet": "The user is interviewing for a Product Designer role at Lumen Health in ten days."
+      },
+      {
+        "kind": "preference",
+        "blobId": "-1z7MzLUGSMq01qkb7e8yPpxhCMS5Ku2Hy855sM2KtI",
+        "snippet": "The user prefers Socratic coaching: the coach should ask questions instead of lecturing."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2160,
+    "firstTokenMs": 2703,
+    "totalMs": 2966
+  },
+  {
+    "persona": "design-tomas",
+    "category": "repeated_mistake",
+    "mode": "amnesia",
+    "question": "What's the main mistake I should watch out for in my answers?",
+    "reply": "The biggest mistake is **answering the question you *think* they are asking, rather than the one they *actually* asked.**\n\nIn interviews, candidates often jump into a long story about a project they are proud of, missing the specific constraint or metric the interviewer was probing for. For example, if asked, \"Tell me about a time you handled conflict,\" and you spend three minutes talking about your technical architecture instead of the interpersonal dynamic, you fail the behavioral test even if your technical skills are strong.\n\nTo fix this:\n1.  **Pause for 2 seconds** before answering to parse the core ask.\n2.  **Restate the question** briefly if it’s complex (\"So you’re asking specifically about how I prioritized features...\").\n3.  **Use the STAR method** (Situation, Task, Action, Result) to keep your narrative tight and focused on *your* specific actions.\n\nTo help me give you more targeted advice:\n**What is your target role, and when is your next interview?**",
+    "error": null,
+    "keywords": [
+      "rambl",
+      "too long",
+      "tangent",
+      "get to the point",
+      "headline",
+      "concise",
+      "shorter"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 302,
+    "totalMs": 729
+  },
+  {
+    "persona": "design-tomas",
+    "category": "repeated_mistake",
+    "mode": "memory",
+    "question": "What's the main mistake I should watch out for in my answers?",
+    "reply": "Tomás, last session (Sun 27 Sep) I asked you to cut the billing/color/reorg details entirely and start with the problem: \"Our patient onboarding had a 40% drop-off rate,\" then state your decision, and finally the result.\n\nWhat was the specific reason you felt you needed to include those extra details in your previous answer?",
+    "error": null,
+    "keywords": [
+      "rambl",
+      "too long",
+      "tangent",
+      "get to the point",
+      "headline",
+      "concise",
+      "shorter"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "8lRYdDKZovhhp1M8CgiidwJrWwUaWihEPMOmAQOtVXA",
+        "snippet": "Product Designer at Lumen Health · interview 2026-10-07 · Socratic (ask questions instead of lecturing)"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "vLHPboDOobWIWiKZafCoNKAkyrS0Ttw5r_wRqboKorc",
+        "snippet": "The user used vague metrics (\"far fewer drop-offs\") instead of concrete numbers when describing the outcome of the usability tests for the patient onboarding flow."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "uWsTK6NmYlQn6PypJmmmF-J9VLVCnglsrEEAxxjHVcc",
+        "snippet": "The user failed to follow a clear STAR structure, mixing background noise with the action and result when discussing the patient onboarding design decision."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "u6bjW7YeuvoVwJl0q70QhurT8Wbff2_GKe9YbTAbSQ8",
+        "snippet": "The user rambled and buried the core design argument in irrelevant context (billing team, color palette, reorg) when describing the patient onboarding flow decision."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "2By5W_xLrtK4aHG0owDXoP55IkvhxyMrkBhJ4I1n8TQ",
+        "snippet": "Coach asked the user to cut the billing/color/reorg details entirely. Start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I propos…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "zLxBtLxX56eHm7gyn9tdpEdXRQjvgLo_s9LWwdoJ7qM",
+        "snippet": "The user is interviewing for a Product Designer role at Lumen Health in ten days."
+      },
+      {
+        "kind": "preference",
+        "blobId": "-1z7MzLUGSMq01qkb7e8yPpxhCMS5Ku2Hy855sM2KtI",
+        "snippet": "The user prefers Socratic coaching: the coach should ask questions instead of lecturing."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2170,
+    "firstTokenMs": 2791,
+    "totalMs": 3022
+  },
+  {
+    "persona": "design-tomas",
+    "category": "last_assignment",
+    "mode": "amnesia",
+    "question": "What did you ask me to work on for next time?",
+    "reply": "Tomás, this is our first conversation, so I haven't assigned any homework yet.\n\nTo get started, what is your **target role** and do you have a specific **interview date** coming up?",
+    "error": null,
+    "keywords": [
+      "billing",
+      "color",
+      "reorg",
+      "details",
+      "entirely",
+      "start"
+    ],
+    "required": 2,
+    "matched": [
+      "start"
+    ],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 332,
+    "totalMs": 415
+  },
+  {
+    "persona": "design-tomas",
+    "category": "last_assignment",
+    "mode": "memory",
+    "question": "What did you ask me to work on for next time?",
+    "reply": "I asked you to cut the billing, color palette, and reorg details entirely from your patient onboarding story. Instead, start with the problem (\"40% drop-off rate\"), state your decision (\"stepped flow\"), and end with the concrete result (\"15% reduction in abandonment\").\n\nLet's apply that now. Can you tell me about that design decision again, following that specific structure?",
+    "error": null,
+    "keywords": [
+      "billing",
+      "color",
+      "reorg",
+      "details",
+      "entirely",
+      "start"
+    ],
+    "required": 2,
+    "matched": [
+      "billing",
+      "color",
+      "reorg",
+      "details",
+      "entirely",
+      "start"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "8lRYdDKZovhhp1M8CgiidwJrWwUaWihEPMOmAQOtVXA",
+        "snippet": "Product Designer at Lumen Health · interview 2026-10-07 · Socratic (ask questions instead of lecturing)"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "vLHPboDOobWIWiKZafCoNKAkyrS0Ttw5r_wRqboKorc",
+        "snippet": "The user used vague metrics (\"far fewer drop-offs\") instead of concrete numbers when describing the outcome of the usability tests for the patient onboarding flow."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "uWsTK6NmYlQn6PypJmmmF-J9VLVCnglsrEEAxxjHVcc",
+        "snippet": "The user failed to follow a clear STAR structure, mixing background noise with the action and result when discussing the patient onboarding design decision."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "u6bjW7YeuvoVwJl0q70QhurT8Wbff2_GKe9YbTAbSQ8",
+        "snippet": "The user rambled and buried the core design argument in irrelevant context (billing team, color palette, reorg) when describing the patient onboarding flow decision."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "2By5W_xLrtK4aHG0owDXoP55IkvhxyMrkBhJ4I1n8TQ",
+        "snippet": "Coach asked the user to cut the billing/color/reorg details entirely. Start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I propos…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "zLxBtLxX56eHm7gyn9tdpEdXRQjvgLo_s9LWwdoJ7qM",
+        "snippet": "The user is interviewing for a Product Designer role at Lumen Health in ten days."
+      },
+      {
+        "kind": "preference",
+        "blobId": "-1z7MzLUGSMq01qkb7e8yPpxhCMS5Ku2Hy855sM2KtI",
+        "snippet": "The user prefers Socratic coaching: the coach should ask questions instead of lecturing."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2168,
+    "firstTokenMs": 2560,
+    "totalMs": 2883
+  },
+  {
+    "persona": "design-tomas",
+    "category": "learning_preference",
+    "mode": "amnesia",
+    "question": "How do I prefer to be coached?",
+    "reply": "I don’t have that information yet, Tomás. Since this is our first conversation, I need to know your target role and interview date to tailor my approach.\n\nWhat role are you targeting, and when is your next interview?",
+    "error": null,
+    "keywords": [
+      "socratic",
+      "ask you questions",
+      "questions instead",
+      "questions rather than",
+      "guiding questions"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 759,
+    "totalMs": 942
+  },
+  {
+    "persona": "design-tomas",
+    "category": "learning_preference",
+    "mode": "memory",
+    "question": "How do I prefer to be coached?",
+    "reply": "You prefer Socratic coaching: I should ask questions to guide you toward the answer rather than lecturing.\n\nTo put that into practice right away: remember the assignment from today (Sun 27 Sep)? You were asked to cut the billing, color palette, and reorg details entirely. Instead, start with the problem (\"Our patient onboarding had a 40% drop-off rate\"), state your decision (\"I proposed a stepped flow instead of a single form\"), and end with the result (\"Usability tests showed a 15% reduction in abandonment\").\n\nLet's try it now. **Walk me through that patient onboarding decision using that exact structure.**",
+    "error": null,
+    "keywords": [
+      "socratic",
+      "ask you questions",
+      "questions instead",
+      "questions rather than",
+      "guiding questions"
+    ],
+    "required": 1,
+    "matched": [
+      "socratic"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "8lRYdDKZovhhp1M8CgiidwJrWwUaWihEPMOmAQOtVXA",
+        "snippet": "Product Designer at Lumen Health · interview 2026-10-07 · Socratic (ask questions instead of lecturing)"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "vLHPboDOobWIWiKZafCoNKAkyrS0Ttw5r_wRqboKorc",
+        "snippet": "The user used vague metrics (\"far fewer drop-offs\") instead of concrete numbers when describing the outcome of the usability tests for the patient onboarding flow."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "uWsTK6NmYlQn6PypJmmmF-J9VLVCnglsrEEAxxjHVcc",
+        "snippet": "The user failed to follow a clear STAR structure, mixing background noise with the action and result when discussing the patient onboarding design decision."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "u6bjW7YeuvoVwJl0q70QhurT8Wbff2_GKe9YbTAbSQ8",
+        "snippet": "The user rambled and buried the core design argument in irrelevant context (billing team, color palette, reorg) when describing the patient onboarding flow decision."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "2By5W_xLrtK4aHG0owDXoP55IkvhxyMrkBhJ4I1n8TQ",
+        "snippet": "Coach asked the user to cut the billing/color/reorg details entirely. Start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I propos…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "zLxBtLxX56eHm7gyn9tdpEdXRQjvgLo_s9LWwdoJ7qM",
+        "snippet": "The user is interviewing for a Product Designer role at Lumen Health in ten days."
+      },
+      {
+        "kind": "preference",
+        "blobId": "-1z7MzLUGSMq01qkb7e8yPpxhCMS5Ku2Hy855sM2KtI",
+        "snippet": "The user prefers Socratic coaching: the coach should ask questions instead of lecturing."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 1970,
+    "firstTokenMs": 2398,
+    "totalMs": 2686
+  },
+  {
+    "persona": "design-tomas",
+    "category": "strength",
+    "mode": "amnesia",
+    "question": "What did I do well in my last answer?",
+    "reply": "Tomás, this is our first conversation, so I don’t have a record of your previous answers to evaluate.\n\nTo help you effectively, I need to know:\n1.  What is your **target role**?\n2.  When is your **interview date**?\n\nOnce you share that, we can start practicing.",
+    "error": null,
+    "keywords": [
+      "usability test",
+      "usability",
+      "user research",
+      "research with"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 521,
+    "totalMs": 685
+  },
+  {
+    "persona": "design-tomas",
+    "category": "strength",
+    "mode": "memory",
+    "question": "What did I do well in my last answer?",
+    "reply": "Tomás, before I answer that, let's apply the assignment from today: cut the billing, color, and reorg details entirely. Start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I proposed a stepped flow instead of a single form.\" Finally, state the result: \"Usability tests showed a 15% reduction in abandonment.\"\n\nCan you try delivering that specific answer now?",
+    "error": null,
+    "keywords": [
+      "usability test",
+      "usability",
+      "user research",
+      "research with"
+    ],
+    "required": 1,
+    "matched": [
+      "usability test",
+      "usability"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "8lRYdDKZovhhp1M8CgiidwJrWwUaWihEPMOmAQOtVXA",
+        "snippet": "Product Designer at Lumen Health · interview 2026-10-07 · Socratic (ask questions instead of lecturing)"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "vLHPboDOobWIWiKZafCoNKAkyrS0Ttw5r_wRqboKorc",
+        "snippet": "The user used vague metrics (\"far fewer drop-offs\") instead of concrete numbers when describing the outcome of the usability tests for the patient onboarding flow."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "uWsTK6NmYlQn6PypJmmmF-J9VLVCnglsrEEAxxjHVcc",
+        "snippet": "The user failed to follow a clear STAR structure, mixing background noise with the action and result when discussing the patient onboarding design decision."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "u6bjW7YeuvoVwJl0q70QhurT8Wbff2_GKe9YbTAbSQ8",
+        "snippet": "The user rambled and buried the core design argument in irrelevant context (billing team, color palette, reorg) when describing the patient onboarding flow decision."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "2By5W_xLrtK4aHG0owDXoP55IkvhxyMrkBhJ4I1n8TQ",
+        "snippet": "Coach asked the user to cut the billing/color/reorg details entirely. Start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I propos…"
+      },
+      {
+        "kind": "goal",
+        "blobId": "zLxBtLxX56eHm7gyn9tdpEdXRQjvgLo_s9LWwdoJ7qM",
+        "snippet": "The user is interviewing for a Product Designer role at Lumen Health in ten days."
+      },
+      {
+        "kind": "preference",
+        "blobId": "-1z7MzLUGSMq01qkb7e8yPpxhCMS5Ku2Hy855sM2KtI",
+        "snippet": "The user prefers Socratic coaching: the coach should ask questions instead of lecturing."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2099,
+    "firstTokenMs": 2482,
+    "totalMs": 2663
+  },
+  {
+    "persona": "design-tomas",
+    "category": "constraint",
+    "mode": "amnesia",
+    "question": "Is there anything about my practice schedule you should keep in mind?",
+    "reply": "Not yet, Tomás. I don’t have any details on your schedule.\n\nTo help me tailor the prep, what is your **target role** and **interview date**?",
+    "error": null,
+    "keywords": [
+      "evening",
+      "8pm",
+      "8 pm",
+      "after 8"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 299,
+    "totalMs": 371
+  },
+  {
+    "persona": "design-tomas",
+    "category": "constraint",
+    "mode": "memory",
+    "question": "Is there anything about my practice schedule you should keep in mind?",
+    "reply": "Yes, I have noted that you can only practice in the evenings after 8pm.\n\nTo keep us on track for your Lumen Health interview on October 7, I have a specific assignment for you from today (September 27). I asked you to cut the billing, color, and reorg details entirely. Instead, I want you to start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I proposed a stepped flow instead of a single form.\" Finally, state the result: \"Usability tests showed a 15% reduction in abandonment.\"\n\nWhen you are ready to practice this evening, can you try delivering that specific structure for your first answer?",
+    "error": null,
+    "keywords": [
+      "evening",
+      "8pm",
+      "8 pm",
+      "after 8"
+    ],
+    "required": 1,
+    "matched": [
+      "evening",
+      "8pm",
+      "after 8"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "8lRYdDKZovhhp1M8CgiidwJrWwUaWihEPMOmAQOtVXA",
+        "snippet": "Product Designer at Lumen Health · interview 2026-10-07 · Socratic (ask questions instead of lecturing)"
+      },
+      {
+        "kind": "assignment",
+        "blobId": "2By5W_xLrtK4aHG0owDXoP55IkvhxyMrkBhJ4I1n8TQ",
+        "snippet": "Coach asked the user to cut the billing/color/reorg details entirely. Start with the problem: \"Our patient onboarding had a 40% drop-off rate.\" Then state your decision: \"I propos…"
+      },
+      {
+        "kind": "preference",
+        "blobId": "SnjR1mUf1NgvSQOcDwPSnH4HnCWUmyUTJPWC4d9mni4",
+        "snippet": "The user can only practice in the evenings after 8pm."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 6004,
+    "firstTokenMs": 6576,
+    "totalMs": 6899
+  },
+  {
+    "persona": "data-amara",
+    "category": "target_role",
+    "mode": "amnesia",
+    "question": "Quick check before we start: which role am I preparing for?",
+    "reply": "I don't know yet, Amara. That's the first thing I need from you.\n\nWhat role are you targeting, and when is your first interview?",
+    "error": null,
+    "keywords": [
+      "data analyst"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 531,
+    "totalMs": 593
+  },
+  {
+    "persona": "data-amara",
+    "category": "target_role",
+    "mode": "memory",
+    "question": "Quick check before we start: which role am I preparing for?",
+    "reply": "You are preparing for a **Data Analyst** role at **Harbor Games**.\n\nTo start, let's tackle your last assignment from today: explicitly name the stakeholder and the decision point. Instead of saying \"we proposed,\" say: \"I presented the funnel data to the Lead Game Designer. He was hesitant to lower difficulty, but the retention drop-off at that specific node convinced him to approve the A/B test.\"\n\nLet's practice that right now. Here is your first question:\n\n**Describe a time you used data to change a stakeholder's mind about a game feature. Who was the stakeholder, what was their initial objection, and what specific data point convinced them?**",
+    "error": null,
+    "keywords": [
+      "data analyst"
+    ],
+    "required": 1,
+    "matched": [
+      "data analyst"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "sIm6aJvY61jrxIZSB3cHFtvVETvZvPvEPibpXhz4qzI",
+        "snippet": "Data Analyst at Harbor Games · theory-first"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "r8p515DP5RQJvvahlBAwP-TDe7xj2PJtrZR4koH6yLg",
+        "snippet": "The user reported a 6% Day-7 retention increase but did not explain the broader business impact or why this specific metric mattered to the company."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "RPziFsQySoc1gi3xV2jAbwTALbFkFGhU66gOJU14y60",
+        "snippet": "The user used passive language (\"we proposed\") and failed to specify who made the decision or how their analysis influenced the stakeholder in the level 3 churn scenario."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "tX5X3RnggTEixFi8FGSzZ64tjoQR973mTU308rl14yQ",
+        "snippet": "Coach asked the user to explicitly name the stakeholder and the decision point. Instead of \"we proposed,\" say: \"I presented the funnel data to the Lead Game Designer. He was hesit…"
+      },
+      {
+        "kind": "strength",
+        "blobId": "h5yvdPzR6eBPs1IIkaDDEZ4ZgJsxKyFTmSmExz--WoQ",
+        "snippet": "The user structured their answer to the player churn question with a clear logical arc (problem, analysis, action, result), demonstrating good STAR structure."
+      },
+      {
+        "kind": "goal",
+        "blobId": "kLyePxzxQeVozXG9lu3nn4ResPkyCqxWqAFSdXbWSJQ",
+        "snippet": "The user is targeting a Data Analyst role at Harbor Games."
+      },
+      {
+        "kind": "preference",
+        "blobId": "D5cNDuGh-Uj9VYWpLs5GaNPnIiH6xVnbvgqVLD08cyg",
+        "snippet": "The user prefers a theory-first learning style, requesting frameworks before examples."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2444,
+    "firstTokenMs": 2781,
+    "totalMs": 3321
+  },
+  {
+    "persona": "data-amara",
+    "category": "repeated_mistake",
+    "mode": "amnesia",
+    "question": "What's the main mistake I should watch out for in my answers?",
+    "reply": "The most common mistake is **burying the lead**.\n\nMany candidates start with context (\"So, the team was struggling with...\") before getting to the action. Interviewers are busy; they need the result first.\n\n**The Fix:** Use the **STAR** method, but flip it slightly for impact:\n1.  **Situation/Task** (1 sentence max)\n2.  **Action** (What *you* specifically did)\n3.  **Result** (The metric or outcome)\n\n**Example:**\n*   *Weak:* \"We had a lot of tickets, and I tried to help by organizing the backlog, which took a while, but eventually things got better.\"\n*   *Strong:* \"Backlog was 30% over capacity. I implemented a triage framework that prioritized high-impact bugs. This reduced average resolution time by 40% in two weeks.\"\n\nTo tailor this to you: **What role are you interviewing for, and when is your first interview?**",
+    "error": null,
+    "keywords": [
+      "\"we\"",
+      "'we'",
+      "your own role",
+      "your role",
+      "you personally",
+      "your contribution",
+      "own contribution",
+      "\"i\""
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 409,
+    "totalMs": 824
+  },
+  {
+    "persona": "data-amara",
+    "category": "repeated_mistake",
+    "mode": "memory",
+    "question": "What's the main mistake I should watch out for in my answers?",
+    "reply": "Amara, before we dive in, let’s address the assignment from today (Sun 27 Sep): explicitly name the stakeholder and the decision point. Instead of \"we proposed,\" say: \"I presented the funnel data to the Lead Game Designer. He was hesitant to lower difficulty, but the retention drop-off at that specific node convinced him to approve the A/B test.\"\n\nTo answer your question about the main mistake to watch out for, let’s look at the principle first.\n\n**Principle: The \"So What?\" Gap**\nIn data analysis interviews, the most common pitfall is stopping at the metric without connecting it to business value. Hiring managers don’t just want to know *what* happened (e.g., \"retention went up 6%\"); they need to know *why it matters* to the company’s bottom line or strategic goals. If you don’t bridge that gap, your answer feels like a report rather than a strategic insight.\n\n**Example:**\n*   **Weak:** \"I analyzed the onboarding flow and found that Day-7 retention increased by 6% after we changed the tutorial.\"\n*   **Strong:** \"I analyzed the onboarding flow and found that Day-7 retention increased by 6% after we changed the tutorial. This was critical because Day-7 retention is our primary predictor of long-term LTV, so this change directly improved our projected user value by $X per cohort.\"\n\n**Quick Practice Question:**\nThink of a time you identified a data trend that impacted a business decision. How did you explain the *business impact* of that trend to a non-technical stakeholder?",
+    "error": null,
+    "keywords": [
+      "\"we\"",
+      "'we'",
+      "your own role",
+      "your role",
+      "you personally",
+      "your contribution",
+      "own contribution",
+      "\"i\""
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "sIm6aJvY61jrxIZSB3cHFtvVETvZvPvEPibpXhz4qzI",
+        "snippet": "Data Analyst at Harbor Games · theory-first"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "r8p515DP5RQJvvahlBAwP-TDe7xj2PJtrZR4koH6yLg",
+        "snippet": "The user reported a 6% Day-7 retention increase but did not explain the broader business impact or why this specific metric mattered to the company."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "RPziFsQySoc1gi3xV2jAbwTALbFkFGhU66gOJU14y60",
+        "snippet": "The user used passive language (\"we proposed\") and failed to specify who made the decision or how their analysis influenced the stakeholder in the level 3 churn scenario."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "tX5X3RnggTEixFi8FGSzZ64tjoQR973mTU308rl14yQ",
+        "snippet": "Coach asked the user to explicitly name the stakeholder and the decision point. Instead of \"we proposed,\" say: \"I presented the funnel data to the Lead Game Designer. He was hesit…"
+      },
+      {
+        "kind": "strength",
+        "blobId": "h5yvdPzR6eBPs1IIkaDDEZ4ZgJsxKyFTmSmExz--WoQ",
+        "snippet": "The user structured their answer to the player churn question with a clear logical arc (problem, analysis, action, result), demonstrating good STAR structure."
+      },
+      {
+        "kind": "goal",
+        "blobId": "kLyePxzxQeVozXG9lu3nn4ResPkyCqxWqAFSdXbWSJQ",
+        "snippet": "The user is targeting a Data Analyst role at Harbor Games."
+      },
+      {
+        "kind": "preference",
+        "blobId": "D5cNDuGh-Uj9VYWpLs5GaNPnIiH6xVnbvgqVLD08cyg",
+        "snippet": "The user prefers a theory-first learning style, requesting frameworks before examples."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2389,
+    "firstTokenMs": 2738,
+    "totalMs": 3498
+  },
+  {
+    "persona": "data-amara",
+    "category": "last_assignment",
+    "mode": "amnesia",
+    "question": "What did you ask me to work on for next time?",
+    "reply": "Hi Amara. We haven't started yet, so I haven't assigned you any work.\n\nTo get us started, what is your **target role** and when is your **interview date**?",
+    "error": null,
+    "keywords": [
+      "explicitly",
+      "name",
+      "stakeholder",
+      "decision",
+      "point",
+      "instead"
+    ],
+    "required": 2,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 362,
+    "totalMs": 453
+  },
+  {
+    "persona": "data-amara",
+    "category": "last_assignment",
+    "mode": "memory",
+    "question": "What did you ask me to work on for next time?",
+    "reply": "Amara, today (Sun 27 Sep) I asked you to explicitly name the stakeholder and the decision point in your churn scenario answer. Instead of saying \"we proposed,\" you were to use specific language like: \"I presented the funnel data to the Lead Game Designer. He was hesitant to lower difficulty, but the retention drop-off at that specific node convinced him to approve the A/B test.\"\n\nDid you get a chance to practice that specific phrasing before we continue?",
+    "error": null,
+    "keywords": [
+      "explicitly",
+      "name",
+      "stakeholder",
+      "decision",
+      "point",
+      "instead"
+    ],
+    "required": 2,
+    "matched": [
+      "explicitly",
+      "name",
+      "stakeholder",
+      "decision",
+      "point",
+      "instead"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "sIm6aJvY61jrxIZSB3cHFtvVETvZvPvEPibpXhz4qzI",
+        "snippet": "Data Analyst at Harbor Games · theory-first"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "r8p515DP5RQJvvahlBAwP-TDe7xj2PJtrZR4koH6yLg",
+        "snippet": "The user reported a 6% Day-7 retention increase but did not explain the broader business impact or why this specific metric mattered to the company."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "RPziFsQySoc1gi3xV2jAbwTALbFkFGhU66gOJU14y60",
+        "snippet": "The user used passive language (\"we proposed\") and failed to specify who made the decision or how their analysis influenced the stakeholder in the level 3 churn scenario."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "tX5X3RnggTEixFi8FGSzZ64tjoQR973mTU308rl14yQ",
+        "snippet": "Coach asked the user to explicitly name the stakeholder and the decision point. Instead of \"we proposed,\" say: \"I presented the funnel data to the Lead Game Designer. He was hesit…"
+      },
+      {
+        "kind": "strength",
+        "blobId": "h5yvdPzR6eBPs1IIkaDDEZ4ZgJsxKyFTmSmExz--WoQ",
+        "snippet": "The user structured their answer to the player churn question with a clear logical arc (problem, analysis, action, result), demonstrating good STAR structure."
+      },
+      {
+        "kind": "goal",
+        "blobId": "kLyePxzxQeVozXG9lu3nn4ResPkyCqxWqAFSdXbWSJQ",
+        "snippet": "The user is targeting a Data Analyst role at Harbor Games."
+      },
+      {
+        "kind": "preference",
+        "blobId": "D5cNDuGh-Uj9VYWpLs5GaNPnIiH6xVnbvgqVLD08cyg",
+        "snippet": "The user prefers a theory-first learning style, requesting frameworks before examples."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2169,
+    "firstTokenMs": 2558,
+    "totalMs": 2788
+  },
+  {
+    "persona": "data-amara",
+    "category": "learning_preference",
+    "mode": "amnesia",
+    "question": "How do I prefer to be coached?",
+    "reply": "I don’t know yet, Amara. I’ll adapt as we go.\n\nTo start: what role are you targeting, and when is your next interview?",
+    "error": null,
+    "keywords": [
+      "theory-first",
+      "theory first",
+      "framework first",
+      "framework before",
+      "principle first"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 289,
+    "totalMs": 380
+  },
+  {
+    "persona": "data-amara",
+    "category": "learning_preference",
+    "mode": "memory",
+    "question": "How do I prefer to be coached?",
+    "reply": "You prefer a **theory-first** approach: I lead with the principle or framework, then follow with one concrete example.\n\nSince it’s been a day since our last session, let’s pick up where we left off. On **Sun 27 Sep**, I asked you to fix your passive language by explicitly naming the stakeholder and the decision point. Instead of saying \"we proposed,\" you were to say something like: *\"I presented the funnel data to the Lead Game Designer. He was hesitant to lower difficulty, but the retention drop-off at that specific node convinced him to approve the A/B test.\"*\n\nLet’s apply that now.\n\n**Practice Question:**\nWalk me through a time you used data to influence a product decision at Harbor Games (or a previous role). Who specifically did you present to, and what was their initial reaction?",
+    "error": null,
+    "keywords": [
+      "theory-first",
+      "theory first",
+      "framework first",
+      "framework before",
+      "principle first"
+    ],
+    "required": 1,
+    "matched": [
+      "theory-first"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "sIm6aJvY61jrxIZSB3cHFtvVETvZvPvEPibpXhz4qzI",
+        "snippet": "Data Analyst at Harbor Games · theory-first"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "r8p515DP5RQJvvahlBAwP-TDe7xj2PJtrZR4koH6yLg",
+        "snippet": "The user reported a 6% Day-7 retention increase but did not explain the broader business impact or why this specific metric mattered to the company."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "RPziFsQySoc1gi3xV2jAbwTALbFkFGhU66gOJU14y60",
+        "snippet": "The user used passive language (\"we proposed\") and failed to specify who made the decision or how their analysis influenced the stakeholder in the level 3 churn scenario."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "tX5X3RnggTEixFi8FGSzZ64tjoQR973mTU308rl14yQ",
+        "snippet": "Coach asked the user to explicitly name the stakeholder and the decision point. Instead of \"we proposed,\" say: \"I presented the funnel data to the Lead Game Designer. He was hesit…"
+      },
+      {
+        "kind": "strength",
+        "blobId": "h5yvdPzR6eBPs1IIkaDDEZ4ZgJsxKyFTmSmExz--WoQ",
+        "snippet": "The user structured their answer to the player churn question with a clear logical arc (problem, analysis, action, result), demonstrating good STAR structure."
+      },
+      {
+        "kind": "goal",
+        "blobId": "kLyePxzxQeVozXG9lu3nn4ResPkyCqxWqAFSdXbWSJQ",
+        "snippet": "The user is targeting a Data Analyst role at Harbor Games."
+      },
+      {
+        "kind": "preference",
+        "blobId": "D5cNDuGh-Uj9VYWpLs5GaNPnIiH6xVnbvgqVLD08cyg",
+        "snippet": "The user prefers a theory-first learning style, requesting frameworks before examples."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2153,
+    "firstTokenMs": 2534,
+    "totalMs": 2900
+  },
+  {
+    "persona": "data-amara",
+    "category": "strength",
+    "mode": "amnesia",
+    "question": "What did I do well in my last answer?",
+    "reply": "Hi Amara. Since this is our first conversation, I don’t have a record of your previous answers to evaluate.\n\nTo help you prepare effectively, what is your **target role** and **interview date**?",
+    "error": null,
+    "keywords": [
+      "retention",
+      "6%",
+      "6 %",
+      "six percent"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 281,
+    "totalMs": 385
+  },
+  {
+    "persona": "data-amara",
+    "category": "strength",
+    "mode": "memory",
+    "question": "What did I do well in my last answer?",
+    "reply": "Amara, before we dive in: your last assignment from today (Sun 27 Sep) was to explicitly name the stakeholder and the decision point, replacing \"we proposed\" with a specific example like, \"I presented the funnel data to the Lead Game Designer. He was hesitant... but the retention drop-off... convinced him to approve the A/B test.\"\n\nTo answer your question about what you did well: **You structured your answer to the player churn question with a clear logical arc (problem, analysis, action, result), demonstrating good STAR structure.** That is a strong foundation.\n\nNow, let's apply that assignment. I’m going to ask you the same churn question again. This time, when you get to the \"Action\" step, make sure you name the specific stakeholder and the exact decision point, just as the assignment required.\n\n**Question:** Walk me through a time you identified a churn issue in a game. What did you do?",
+    "error": null,
+    "keywords": [
+      "retention",
+      "6%",
+      "6 %",
+      "six percent"
+    ],
+    "required": 1,
+    "matched": [
+      "retention"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "sIm6aJvY61jrxIZSB3cHFtvVETvZvPvEPibpXhz4qzI",
+        "snippet": "Data Analyst at Harbor Games · theory-first"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "r8p515DP5RQJvvahlBAwP-TDe7xj2PJtrZR4koH6yLg",
+        "snippet": "The user reported a 6% Day-7 retention increase but did not explain the broader business impact or why this specific metric mattered to the company."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "RPziFsQySoc1gi3xV2jAbwTALbFkFGhU66gOJU14y60",
+        "snippet": "The user used passive language (\"we proposed\") and failed to specify who made the decision or how their analysis influenced the stakeholder in the level 3 churn scenario."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "tX5X3RnggTEixFi8FGSzZ64tjoQR973mTU308rl14yQ",
+        "snippet": "Coach asked the user to explicitly name the stakeholder and the decision point. Instead of \"we proposed,\" say: \"I presented the funnel data to the Lead Game Designer. He was hesit…"
+      },
+      {
+        "kind": "strength",
+        "blobId": "h5yvdPzR6eBPs1IIkaDDEZ4ZgJsxKyFTmSmExz--WoQ",
+        "snippet": "The user structured their answer to the player churn question with a clear logical arc (problem, analysis, action, result), demonstrating good STAR structure."
+      },
+      {
+        "kind": "goal",
+        "blobId": "kLyePxzxQeVozXG9lu3nn4ResPkyCqxWqAFSdXbWSJQ",
+        "snippet": "The user is targeting a Data Analyst role at Harbor Games."
+      },
+      {
+        "kind": "preference",
+        "blobId": "D5cNDuGh-Uj9VYWpLs5GaNPnIiH6xVnbvgqVLD08cyg",
+        "snippet": "The user prefers a theory-first learning style, requesting frameworks before examples."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2198,
+    "firstTokenMs": 2560,
+    "totalMs": 2991
+  },
+  {
+    "persona": "data-amara",
+    "category": "constraint",
+    "mode": "amnesia",
+    "question": "Is there anything about my practice schedule you should keep in mind?",
+    "reply": "I don't have access to your calendar or past notes, Amara. I'm starting fresh with you today.\n\nTo tailor the prep effectively, I need two things:\n\n1.  **Target Role:** What specific title and company (or type of company) are you interviewing for?\n2.  **Timeline:** When is your next interview?\n\nOnce I have that, I can suggest a realistic practice schedule based on how much time you actually have.",
+    "error": null,
+    "keywords": [
+      "tuesday",
+      "thursday",
+      "twice a week"
+    ],
+    "required": 1,
+    "matched": [],
+    "pass": false,
+    "recalled": [],
+    "degraded": false,
+    "recallAttempt": null,
+    "recallLatencyMs": null,
+    "firstTokenMs": 310,
+    "totalMs": 491
+  },
+  {
+    "persona": "data-amara",
+    "category": "constraint",
+    "mode": "memory",
+    "question": "Is there anything about my practice schedule you should keep in mind?",
+    "reply": "Yes, Amara. I have noted that you are available to practice only twice a week, on Tuesdays and Thursdays.\n\nTo keep us on track for your target role at Harbor Games, let’s start by applying the assignment from our last session (Sun 27 Sep): **explicitly name the stakeholder and the decision point.** Instead of saying \"we proposed,\" you need to say something like: \"I presented the funnel data to the Lead Game Designer. He was hesitant to lower difficulty, but the retention drop-off at that specific node convinced him to approve the A/B test.\"\n\nLet's practice that now. Please give me a brief STAR answer to this question:\n\n**\"Tell me about a time your data analysis changed a stakeholder's mind.\"**\n\nMake sure to explicitly name the specific person (stakeholder) and the exact moment (decision point) where your analysis influenced them.",
+    "error": null,
+    "keywords": [
+      "tuesday",
+      "thursday",
+      "twice a week"
+    ],
+    "required": 1,
+    "matched": [
+      "tuesday",
+      "thursday",
+      "twice a week"
+    ],
+    "pass": true,
+    "recalled": [
+      {
+        "kind": "profile",
+        "blobId": "sIm6aJvY61jrxIZSB3cHFtvVETvZvPvEPibpXhz4qzI",
+        "snippet": "Data Analyst at Harbor Games · theory-first"
+      },
+      {
+        "kind": "mistake",
+        "blobId": "r8p515DP5RQJvvahlBAwP-TDe7xj2PJtrZR4koH6yLg",
+        "snippet": "The user reported a 6% Day-7 retention increase but did not explain the broader business impact or why this specific metric mattered to the company."
+      },
+      {
+        "kind": "mistake",
+        "blobId": "RPziFsQySoc1gi3xV2jAbwTALbFkFGhU66gOJU14y60",
+        "snippet": "The user used passive language (\"we proposed\") and failed to specify who made the decision or how their analysis influenced the stakeholder in the level 3 churn scenario."
+      },
+      {
+        "kind": "assignment",
+        "blobId": "tX5X3RnggTEixFi8FGSzZ64tjoQR973mTU308rl14yQ",
+        "snippet": "Coach asked the user to explicitly name the stakeholder and the decision point. Instead of \"we proposed,\" say: \"I presented the funnel data to the Lead Game Designer. He was hesit…"
+      },
+      {
+        "kind": "strength",
+        "blobId": "h5yvdPzR6eBPs1IIkaDDEZ4ZgJsxKyFTmSmExz--WoQ",
+        "snippet": "The user structured their answer to the player churn question with a clear logical arc (problem, analysis, action, result), demonstrating good STAR structure."
+      },
+      {
+        "kind": "goal",
+        "blobId": "kLyePxzxQeVozXG9lu3nn4ResPkyCqxWqAFSdXbWSJQ",
+        "snippet": "The user is targeting a Data Analyst role at Harbor Games."
+      },
+      {
+        "kind": "preference",
+        "blobId": "D5cNDuGh-Uj9VYWpLs5GaNPnIiH6xVnbvgqVLD08cyg",
+        "snippet": "The user prefers a theory-first learning style, requesting frameworks before examples."
+      },
+      {
+        "kind": "preference",
+        "blobId": "b2MMTXujgtY0ZnhxfxK9jDUQPZfz2CJ0FyrtHsZ_nwg",
+        "snippet": "The user is available to practice only twice a week, on Tuesdays and Thursdays."
+      }
+    ],
+    "degraded": false,
+    "recallAttempt": 1,
+    "recallLatencyMs": 2223,
+    "firstTokenMs": 2622,
+    "totalMs": 3019
+  }
+]

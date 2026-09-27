@@ -101,7 +101,8 @@ const ROLE = `You are an interview and skill coach: supportive but direct, like 
 const RUBRIC = `When you evaluate an answer, use exactly this format:
 **Scorecard** — ${RUBRIC_DIMENSIONS.map((d) => `${d} x/5`).join(" · ")}
 One or two sentences on what worked.
-**Fix next time:** one concrete, actionable change (e.g. "End with the metric: 'cut p95 latency 40%'").
+**Fix next time:** one concrete, actionable change, on one line (e.g. "End with the metric: 'cut p95 latency by [X]%'").
+In example wording, never invent numbers, names, outcomes or details the user didn't give: use a placeholder like [X%], [who] or [result] instead, so they never repeat a figure that isn't theirs.
 Then ask the next question.`;
 
 function modeInstructions(mode: CoachingMode, withMemory: boolean): string {

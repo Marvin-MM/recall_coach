@@ -21,6 +21,8 @@
     "auth:generate": "pnpm dlx auth@1.7.5 generate --config scripts/auth-cli.config.ts --adapter drizzle --dialect postgresql --output src/server/db/auth-schema.ts -y && biome check --write src/server/db/auth-schema.ts",
     "memwal:verify": "tsx --conditions=react-server scripts/memwal-verify.ts",
     "memwal:stats": "tsx --conditions=react-server scripts/memwal-stats.ts",
+    "eval:memory": "tsx --conditions=react-server scripts/eval-memory.ts",
+    "groq:checks": "tsx --conditions=react-server scripts/groq-checks.ts",
     "evidence:export": "tsx --conditions=react-server scripts/evidence-export.ts",
     "probes": "tsx --conditions=react-server bug-hunt/run-probes.ts",
     "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
