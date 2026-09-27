@@ -13,6 +13,9 @@ Deadline: **9 October 2026, 14:00 UTC**. Items marked `TODO(human)` need a perso
 - [x] Article ready to publish once evidence is in: `docs/article/ARTICLE_FINAL.md` (local only). Real-use numbers, screenshots and the before/after transcript are `TODO(human)` slots
 - [x] X post draft: `docs/article/X_POST.md` (local only)
 - [x] Bug filing pack: `bug-hunt/ready/*.md`, `bug-hunt/ready/COMMENTS.md` and `bug-hunt/FILING_PLAN.md`, plus `docs/article/FEEDBACK_FORM.md` (all local only, gitignored)
+- [x] Memory eval on Mainnet: `eval/results/20260927-1213/SUMMARY.md` (`pnpm eval:memory`)
+- [x] Friction log: `FRICTION.md` (Walrus Memory + Qwen on Groq, sourced)
+- [x] Paste-ready form values: `docs/SUBMISSION_FORM.md`
 - [ ] Human-only items (below)
 
 ## Form fields and where each value comes from
