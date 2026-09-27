@@ -139,9 +139,14 @@ export const recallEvents = pgTable(
     latencyMs: integer("latency_ms").notNull(),
     degraded: boolean("degraded").notNull().default(false),
     degradedReason: text("degraded_reason"),
+    /** 1, or 2 when the recall was retried once before degrading. */
+    attempt: smallint("attempt").notNull().default(1),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
   },
-  (t) => [index("recall_events_user_created_idx").on(t.userId, t.createdAt.desc())],
+  (t) => [
+    index("recall_events_user_created_idx").on(t.userId, t.createdAt.desc()),
+    check("recall_events_attempt_check", sql`${t.attempt} in (1, 2)`),
+  ],
 );
 
 /**

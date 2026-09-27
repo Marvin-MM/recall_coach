@@ -4,12 +4,15 @@ import { coachProfileSchema } from "@/lib/schemas/profile";
 import { type FactKind, MEMORY_KINDS } from "@/types/domain";
 import type { CoachProfile, DecodedMemory } from "@/types/memory";
 import { stripInstructionMarkup } from "./sanitize";
+import { isTaggedKind, type MemoryTag, toMemoryTag } from "./tags";
 
 /**
  * Self-describing memory lines, e.g.
- *   [kind=mistake][at=2026-09-22T10:14:00.000Z][session=<uuid>] The user skipped the Result…
+ *   [kind=mistake][tag=structure][at=2026-09-22T10:14:00.000Z][session=<uuid>] The user skipped the Result…
+ *   [kind=assignment][tag=impact][at=…][session=<uuid>] Coach asked the user to end with the metric…
  *   [kind=profile][at=…][v=1] {"targetRole":"Backend Engineer",…}
- * Lines stay meaningful when recalled out of context.
+ * Lines stay meaningful when recalled out of context. `tag` is written for
+ * mistake/strength/improvement/assignment lines (see tags.ts).
  */
 export const PROFILE_FORMAT_VERSION = 1;
 const MAX_PROFILE_JSON_CHARS = 1200;
@@ -19,6 +22,8 @@ export interface FactInput {
   text: string;
   at: Date;
   sessionId?: string | null | undefined;
+  /** Written only for tagged kinds; defaults to `other` there. */
+  tag?: MemoryTag | undefined;
 }
 
 export interface ProfileInput {
@@ -47,7 +52,8 @@ export function encodeFact(input: FactInput): string {
     input.sessionId && uuidSchema.safeParse(input.sessionId).success
       ? `[session=${input.sessionId}]`
       : "";
-  return `[kind=${input.kind}][at=${input.at.toISOString()}]${session} ${body}`;
+  const tag = isTaggedKind(input.kind) ? `[tag=${input.tag ?? "other"}]` : "";
+  return `[kind=${input.kind}]${tag}[at=${input.at.toISOString()}]${session} ${body}`;
 }
 
 export function encodeProfile(input: ProfileInput): string {
@@ -74,6 +80,7 @@ const FIELD_RE = /\[([a-z]+)=([^[\]\s]{1,64})\]/g;
 
 const headerSchema = z.object({
   kind: z.enum(MEMORY_KINDS),
+  tag: z.string().optional(),
   at: z.iso.datetime({ offset: true }),
   session: z.uuid().optional(),
   v: z.coerce.number().int().positive().optional(),
@@ -101,6 +108,8 @@ export function decodeMemory(text: string): DecodedMemory | null {
     body,
   };
   if (parsed.data.session) decoded.sessionId = parsed.data.session;
+  // Legacy (untagged) and unknown tags decode as `other`.
+  if (isTaggedKind(parsed.data.kind)) decoded.tag = toMemoryTag(parsed.data.tag);
   if (parsed.data.v !== undefined) decoded.version = parsed.data.v;
 
   if (parsed.data.kind === "profile") {

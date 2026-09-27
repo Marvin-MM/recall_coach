@@ -15,6 +15,7 @@ import type { ExtractionResult } from "../llm/extraction";
 import { CHAT_PROVIDER_OPTIONS, CHAT_SETTINGS, type ModelFactory } from "../llm/model";
 import type { ExtractionPromptInput } from "../llm/prompts/extraction";
 import { buildSystemPrompt } from "../llm/prompts/system";
+import type { AssignmentCache } from "../memory/assignment-cache";
 import type { MemoryPort } from "../memory/memory-port";
 import { deriveNamespaces } from "../memory/namespace";
 import { persistTurn } from "../memory/persist-service";
@@ -69,6 +70,7 @@ export interface ChatServiceDeps {
   namespacePrefix: string;
   recallTimeoutMs: number;
   profileCache?: ProfileCache;
+  assignmentCache?: AssignmentCache;
   now?: () => Date;
 }
 
@@ -150,14 +152,26 @@ export function createChatService(deps: ChatServiceDeps) {
         thread = [...(body.history ?? []), { role: "user", text: lastUserText }];
       }
 
-      const recall = await recallForTurn(
-        {
-          memory,
-          timeoutMs: deps.recallTimeoutMs,
-          ...(deps.profileCache ? { profileCache: deps.profileCache } : {}),
-        },
-        { namespaces, mode: session.mode, lastUserText, firstTurn },
-      );
+      const [recall, previousPending] = await Promise.all([
+        recallForTurn(
+          {
+            memory,
+            timeoutMs: deps.recallTimeoutMs,
+            ...(deps.profileCache ? { profileCache: deps.profileCache } : {}),
+            ...(deps.assignmentCache ? { assignmentCache: deps.assignmentCache } : {}),
+            hasSavedMemories: async () =>
+              (await deps.memoryEvents.countDoneBlobsByUser(user.id)) > 0,
+          },
+          { namespaces, mode: session.mode, lastUserText, firstTurn, sessionId: session.id },
+        ),
+        // Metadata only: are an earlier session's memories still saving?
+        memoryEnabled
+          ? deps.memoryEvents.pendingFromOtherSession(user.id, session.id).catch((error) => {
+              log.warn("chat.pending_check_failed", { code: errorCode(error) });
+              return null;
+            })
+          : Promise.resolve(null),
+      ]);
 
       const system = buildSystemPrompt({
         mode: session.mode,
@@ -167,6 +181,9 @@ export function createChatService(deps: ChatServiceDeps) {
         memoryEnabled,
         degraded: recall.degraded,
         firstTurn,
+        assignment: recall.assignment?.memory ?? null,
+        patterns: recall.patterns,
+        previousSessionPending: previousPending?.pending ?? 0,
         now: now(),
         userFirstName: user.name.split(/\s+/)[0] ?? null,
       });
@@ -282,6 +299,7 @@ export function createChatService(deps: ChatServiceDeps) {
             latencyMs: recall.latencyMs,
             degraded: recall.degraded,
             degradedReason: recall.reason,
+            attempt: recall.attempt,
           });
           if (!settings?.memoryConsentAt || llmFailed || assistantText.trim().length === 0) return;
           await persistTurn(
@@ -290,6 +308,7 @@ export function createChatService(deps: ChatServiceDeps) {
               memoryEvents: deps.memoryEvents,
               extract: deps.extract,
               ...(deps.profileCache ? { profileCache: deps.profileCache } : {}),
+              ...(deps.assignmentCache ? { assignmentCache: deps.assignmentCache } : {}),
               now,
             },
             {
@@ -299,12 +318,17 @@ export function createChatService(deps: ChatServiceDeps) {
               lastUserText,
               assistantText,
               profile: recall.profile,
-              recalledTexts: [...recall.recap, ...recall.facts].map(
-                (m) => m.decoded?.body ?? m.text,
-              ),
+              recalledTexts: [
+                ...recall.recap,
+                ...recall.facts,
+                ...(recall.assignment ? [recall.assignment.memory] : []),
+              ].map((m) => m.decoded?.body ?? m.text),
               knownMistakes: [...recall.recap, ...recall.facts]
                 .filter((m) => m.decoded?.kind === "mistake")
                 .map((m) => m.decoded?.body ?? m.text),
+              lastAssignment: recall.assignment
+                ? { body: recall.assignment.body, tag: recall.assignment.tag }
+                : null,
             },
           );
         } catch (error) {

@@ -37,9 +37,12 @@ export const DEFAULT_FAKE_EXTRACTION = JSON.stringify({
   facts: [
     {
       kind: "goal",
+      tag: "other",
       text: "The user wants to practise behavioral STAR answers with measurable results.",
     },
   ],
+  assignmentTag: null,
+  assignmentCompleted: false,
   profileUpdate: null,
 });
 

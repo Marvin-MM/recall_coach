@@ -12,6 +12,7 @@ export const MEMORY_KINDS = [
   "improvement",
   "goal",
   "preference",
+  "assignment",
 ] as const;
 export type MemoryKind = (typeof MEMORY_KINDS)[number];
 
@@ -25,6 +26,7 @@ export const FACT_KINDS = [
   "target_role",
   "interview_date",
   "learning_style",
+  "assignment",
 ] as const satisfies readonly MemoryKind[];
 export type FactKind = (typeof FACT_KINDS)[number];
 

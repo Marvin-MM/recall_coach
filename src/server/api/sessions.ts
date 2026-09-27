@@ -14,6 +14,7 @@ import type { TranscriptStore } from "@/server/transcripts/transcript-store";
 import type {
   ActiveSessionDto,
   DeletedDto,
+  PreviousSavesDto,
   SessionDetailDto,
   SessionDto,
   SessionMemoriesDto,
@@ -144,6 +145,38 @@ export function createSessionsHandlers(deps: SessionsDeps) {
         return jsonOk<SessionDetailDto>({ ...toSessionBase(row), jobs });
       } catch (error) {
         return errorResponse(error, { route: "sessions.get" });
+      }
+    },
+
+    /**
+     * Are an earlier session's memories still saving to Walrus? Completes
+     * what it can (like the summary poll) and returns the live pending count.
+     * Metadata only — never memory text.
+     */
+    async previousSaves(request: Request, rawId: string): Promise<Response> {
+      try {
+        const user = await deps.requireUser(request);
+        await deps.rateLimit.enforce("api", user.id);
+        const current = await ownedSession(user.id, rawId);
+        const previous = await deps.memoryEvents.pendingFromOtherSession(user.id, current.id);
+        if (!previous) return jsonOk<PreviousSavesDto>({ sessionId: null, pending: 0 });
+        let pending = previous.pending;
+        const res = await reconcilePendingJobs({
+          memory: deps.memory(),
+          memoryEvents: deps.memoryEvents,
+          userId: user.id,
+          coachingSessionId: previous.coachingSessionId,
+        });
+        if (res.done + res.failed > 0) {
+          const jobs = await deps.memoryEvents.countJobsForSession(
+            user.id,
+            previous.coachingSessionId,
+          );
+          pending = jobs.pending;
+        }
+        return jsonOk<PreviousSavesDto>({ sessionId: previous.coachingSessionId, pending });
+      } catch (error) {
+        return errorResponse(error, { route: "sessions.previous_saves" });
       }
     },
 

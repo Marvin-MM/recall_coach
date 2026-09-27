@@ -104,3 +104,16 @@ export function allModelInput(models: {
     ...models.extraction.doGenerateCalls.map((c) => c.prompt),
   ]);
 }
+
+/** A complete extraction-model JSON answer (strict schema: every field present). */
+export function extractionJson(
+  facts: readonly { kind: string; tag: string; text: string }[],
+  extra: { assignmentTag?: string | null; assignmentCompleted?: boolean } = {},
+): string {
+  return JSON.stringify({
+    facts,
+    assignmentTag: extra.assignmentTag ?? null,
+    assignmentCompleted: extra.assignmentCompleted ?? false,
+    profileUpdate: null,
+  });
+}

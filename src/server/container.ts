@@ -12,6 +12,7 @@ import { extractMemories } from "./llm/extraction";
 import { createFakeModelFactory } from "./llm/fake-model";
 import { createGroqModelFactory, type ModelFactory } from "./llm/model";
 import type { ExtractionPromptInput } from "./llm/prompts/extraction";
+import { assignmentCache } from "./memory/assignment-cache";
 import { profileCache } from "./memory/profile-cache";
 import { getMemoryPort, memoryForSession } from "./memory/provider";
 import { getRateLimitPolicy } from "./ratelimit";
@@ -56,6 +57,7 @@ export function appDeps() {
       extractMemories({ ...input, model: modelFactory.extractionModel() }),
     after: (task: () => Promise<void>) => after(task),
     profileCache,
+    assignmentCache,
     namespacePrefix: env.MEMWAL_NAMESPACE_PREFIX,
     recallTimeoutMs: env.MEMWAL_RECALL_TIMEOUT_MS,
     adminEmails: env.ADMIN_EMAILS,

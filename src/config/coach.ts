@@ -35,6 +35,7 @@ export const MEMORY_KIND_LABELS: Record<MemoryKind, string> = {
   improvement: "Improvements",
   goal: "Goals",
   preference: "Preferences",
+  assignment: "Assignments",
 };
 
 export const EXPERIENCE_LEVELS = ["intern", "junior", "mid", "senior", "staff+"] as const;
@@ -69,6 +70,7 @@ export const coachLimits = {
   factsMaxDistance: 0.65,
   profileLimit: 5,
   recapLimit: 6,
+  assignmentLimit: 5,
   /** Bulk remember cap per SDK call. */
   bulkMax: 20,
   /** Summary polling (client). */
@@ -82,6 +84,7 @@ export const coachLimits = {
 export const RECALL_QUERIES = {
   profile: "current coaching profile target role learning style",
   recap: "most recent mistakes and progress",
+  assignment: "Coach asked the user to practise this fix next time",
   fallbackByMode: {
     mock_interview: "recent interview mistakes and weak spots",
     drill: "recurring interview mistakes and weak spots to drill",

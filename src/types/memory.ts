@@ -1,3 +1,4 @@
+import type { MemoryTag } from "@/server/memory/tags";
 import type { MemoryKind } from "./domain";
 
 export const EXPERIENCE_LEVELS = ["intern", "junior", "mid", "senior", "staff+"] as const;
@@ -21,6 +22,8 @@ export interface DecodedMemory {
   /** ISO timestamp from the header */
   at: string;
   sessionId?: string;
+  /** Tagged kinds only (mistake/strength/improvement/assignment); legacy lines → `other`. */
+  tag?: MemoryTag;
   version?: number;
   /** Fact text (or raw JSON payload for profile snapshots) */
   body: string;

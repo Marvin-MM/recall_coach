@@ -1,4 +1,4 @@
-import { MemoryTimeoutError, MemoryUnavailableError } from "@/lib/errors";
+import { MemoryRecallDroppedError, MemoryTimeoutError, MemoryUnavailableError } from "@/lib/errors";
 import { sleep } from "@/lib/timeout";
 import type { RecalledMemory, RememberOutcome } from "@/types/memory";
 import { canonical } from "./dedup";
@@ -9,7 +9,11 @@ export interface FakeMemoryOptions {
   /** Artificial latency for recall/remember (ms). */
   latencyMs?: number;
   /** Make recall throw. */
-  failRecall?: "unavailable" | "timeout" | false;
+  failRecall?: "unavailable" | "timeout" | "dropped" | false;
+  /** The next N recalls report every match dropped (then recover). */
+  dropNextRecalls?: number;
+  /** The next N recalls return an empty set (then recover). */
+  emptyNextRecalls?: number;
   /** Indexes (within a rememberMany call) that should fail. */
   failRememberIndexes?: readonly number[];
   /** Texts that fail transiently this many times before succeeding. */
@@ -70,6 +74,15 @@ export function createFakeMemory(initial: FakeMemoryOptions = {}): FakeMemoryPor
         throw new MemoryTimeoutError("fake.recall", options.latencyMs ?? 0);
       if (options.failRecall === "unavailable")
         throw new MemoryUnavailableError("fake recall failure");
+      if (options.failRecall === "dropped") throw new MemoryRecallDroppedError(3);
+      if (options.dropNextRecalls && options.dropNextRecalls > 0) {
+        options.dropNextRecalls--;
+        throw new MemoryRecallDroppedError(3);
+      }
+      if (options.emptyNextRecalls && options.emptyNextRecalls > 0) {
+        options.emptyNextRecalls--;
+        return [];
+      }
       const q = words(args.query);
       const hits: RecalledMemory[] = (store.get(args.namespace) ?? []).map((m) => {
         const w = words(m.text);

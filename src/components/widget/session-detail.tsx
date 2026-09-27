@@ -210,9 +210,14 @@ export function SessionDetail({
   useEffect(() => load(), [load]);
   useEffect(() => headingRef.current?.focus(), []);
 
+  // Distinct texts: two blobs can hold the same sentence (saved in different turns).
   const recapItems =
     memories.state === "ok"
-      ? memories.data.items.flatMap((i) => (i.text && i.kind !== "profile" ? [i.text] : []))
+      ? [
+          ...new Set(
+            memories.data.items.flatMap((i) => (i.text && i.kind !== "profile" ? [i.text] : [])),
+          ),
+        ]
       : [];
 
   const transcriptBody = (

@@ -111,14 +111,15 @@ describe("createMemWalPort failure mapping", () => {
     );
   });
 
-  it("treats an all-dropped recall (download/decrypt failures) as unavailable, not empty", async () => {
+  it("treats an all-dropped recall (download/decrypt failures) as a typed failure, not empty", async () => {
     const port = createMemWalPort(
       { ...base, recall: async () => ({ results: [], total: 0, dropped_count: 9 }) },
       cfg,
     );
-    await expect(port.recall({ namespace: "n", query: "q", limit: 5 })).rejects.toBeInstanceOf(
-      MemoryUnavailableError,
-    );
+    await expect(port.recall({ namespace: "n", query: "q", limit: 5 })).rejects.toMatchObject({
+      code: "MEMORY_RECALL_DROPPED",
+      dropped: 9,
+    });
   });
 
   it("returns partial results when only some matches were dropped", async () => {

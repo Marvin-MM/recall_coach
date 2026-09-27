@@ -41,6 +41,7 @@ import {
   messageText,
 } from "./export-conversation";
 import { MessageMemoryChips } from "./message-memory-chips";
+import { PreviousSavesNotice } from "./previous-saves-notice";
 import { parseScorecard, Scorecard } from "./scorecard";
 import type { RecapSeed } from "./state";
 import { buildClientHistory, latestNextSeq, transcriptToUiMessages } from "./thread-utils";
@@ -299,6 +300,7 @@ function ChatThread({
           Amnesia Mode: nothing is recalled or saved.
         </p>
       )}
+      {memoryEnabled && <PreviousSavesNotice sessionId={sessionId} />}
       {!saveTranscripts && (
         <p
           className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-xs text-muted-foreground"

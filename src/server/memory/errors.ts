@@ -27,7 +27,10 @@ export function classifyMemoryError(raw: unknown, label = "memory"): ClassifiedM
   if (raw instanceof MemoryError) {
     return {
       error: raw,
-      transient: raw instanceof MemoryTimeoutError || raw.code === "MEMORY_UNAVAILABLE",
+      transient:
+        raw instanceof MemoryTimeoutError ||
+        raw.code === "MEMORY_UNAVAILABLE" ||
+        raw.code === "MEMORY_RECALL_DROPPED",
     };
   }
   const e = (raw ?? {}) as SdkErrorShape;

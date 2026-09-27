@@ -11,6 +11,7 @@ import type {
   MemoryInspectorDto,
   MeResponse,
   OnboardingResultDto,
+  PreviousSavesDto,
   SessionDetailDto,
   SessionDto,
   SessionMemoriesDto,
@@ -68,6 +69,7 @@ export const api = {
   deleteSessionMessages: (id: string) =>
     request<DeletedDto>(`${sessionPath(id)}/messages`, { method: "DELETE" }),
   sessionMemories: (id: string) => request<SessionMemoriesDto>(`${sessionPath(id)}/memories`),
+  previousSaves: (id: string) => request<PreviousSavesDto>(`${sessionPath(id)}/previous-saves`),
   patchSettings: (input: PatchSettingsInput) =>
     request<SettingsDto>("/api/me/settings", { method: "PATCH", body: JSON.stringify(input) }),
   deleteAllTranscripts: () => request<DeletedDto>("/api/me/transcripts", { method: "DELETE" }),

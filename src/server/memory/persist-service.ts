@@ -7,6 +7,8 @@ import type { CoachProfile, RememberOutcome } from "@/types/memory";
 import type { AcceptedJob, MemoryEventsRepo } from "../db/repositories/memory-events.repo";
 import type { ExtractionResult } from "../llm/extraction";
 import type { ExtractionPromptInput } from "../llm/prompts/extraction";
+import { assignmentText, completedAssignmentText, parseFixNextTime } from "./assignment";
+import type { AssignmentCache } from "./assignment-cache";
 import { dedupeAgainst } from "./dedup";
 import { classifyMemoryError } from "./errors";
 import { cleanFactText, decodeMemory, encodeFact, encodeProfile } from "./memory-format";
@@ -15,6 +17,7 @@ import type { MemoryNamespaces } from "./namespace";
 import { mergeProfile, profileChanged } from "./profile";
 import type { ProfileCache } from "./profile-cache";
 import { containsInjection } from "./sanitize";
+import type { MemoryTag } from "./tags";
 
 export const RETRY_DELAYS_MS = [500, 2000] as const;
 
@@ -32,6 +35,7 @@ const STILL_PENDING_CODES = new Set([
 export interface PersistDeps {
   memory: MemoryPort;
   profileCache?: ProfileCache;
+  assignmentCache?: AssignmentCache;
   memoryEvents: MemoryEventsRepo;
   extract: (input: ExtractionPromptInput) => Promise<ExtractionResult>;
   now?: () => Date;
@@ -58,6 +62,10 @@ export interface PersistSummary extends Omit<StoreSummary, "stored"> {
   droppedDup: number;
   droppedInjection: number;
   profileUpdated: boolean;
+  /** A "Fix next time" assignment was saved (or is still saving). */
+  assignmentSaved: boolean;
+  /** The last assignment was completed and an improvement was saved for it. */
+  assignmentCompleted: boolean;
   latencyMs: number;
   error: string | null;
 }
@@ -234,6 +242,32 @@ function cacheStoredProfile(
   });
 }
 
+/**
+ * Keep this instance's "latest assignment" in step with what was just saved:
+ * a new stored assignment replaces it; a completed one (and no new one) clears it.
+ */
+function cacheAssignment(
+  deps: PersistDeps,
+  namespace: string,
+  items: readonly StoreItem[],
+  summary: StoreSummary,
+  assignmentIndex: number,
+  completed: boolean,
+): void {
+  if (!deps.assignmentCache) return;
+  const stored = summary.stored.find((x) => x.index === assignmentIndex);
+  const item = assignmentIndex >= 0 ? items[assignmentIndex] : undefined;
+  if (item && (stored || summary.pending > 0)) {
+    // Still saving: known to this instance without a blob id yet (no chip).
+    const blobId = stored?.blobId ?? "";
+    deps.assignmentCache.set(namespace, {
+      memory: { blobId, text: item.line, distance: 0, decoded: decodeMemory(item.line) },
+    });
+  } else if (completed) {
+    deps.assignmentCache.set(namespace, { memory: null });
+  }
+}
+
 export interface PersistTurnInput {
   userId: string;
   sessionId: string;
@@ -245,6 +279,8 @@ export interface PersistTurnInput {
   recalledTexts: readonly string[];
   /** Known past mistakes, so the extractor can log improvements. */
   knownMistakes: readonly string[];
+  /** Latest open assignment (from Walrus Memory), so a success can be logged. */
+  lastAssignment?: { body: string; tag: MemoryTag } | null;
 }
 
 /** Post-response persistence for one chat turn (runs inside `after()`). */
@@ -264,6 +300,8 @@ export async function persistTurn(
     droppedDup: 0,
     droppedInjection: 0,
     profileUpdated: false,
+    assignmentSaved: false,
+    assignmentCompleted: false,
     latencyMs: 0,
     error: null,
   };
@@ -276,6 +314,7 @@ export async function persistTurn(
         assistantText: input.assistantText,
         profile: input.profile,
         knownMistakes: input.knownMistakes,
+        lastAssignment: input.lastAssignment?.body ?? null,
         now: at,
       });
     } catch (error) {
@@ -288,9 +327,29 @@ export async function persistTurn(
     const safe = extraction.facts.filter((f) => !containsInjection(f.text));
     summary.droppedInjection = extraction.facts.length - safe.length;
     const cleaned = safe
-      .map((f) => ({ kind: f.kind, text: cleanFactText(f.text) }))
+      .map((f) => ({ kind: f.kind, tag: f.tag, text: cleanFactText(f.text) }))
       .filter((f) => f.text.length >= 8 && !containsInjection(f.text));
     summary.droppedInjection += safe.length - cleaned.length;
+
+    // The coach's own "Fix next time" (parsed from the reply, not paraphrased
+    // by the model) becomes this session's assignment.
+    const fix = parseFixNextTime(input.assistantText);
+    if (fix && !containsInjection(fix)) {
+      cleaned.push({
+        kind: "assignment",
+        tag: extraction.assignmentTag ?? "other",
+        text: cleanFactText(assignmentText(fix)),
+      });
+    }
+    // The user did the last assignment: an improvement with the same tag.
+    const completed = Boolean(input.lastAssignment && extraction.assignmentCompleted);
+    if (input.lastAssignment && completed) {
+      cleaned.push({
+        kind: "improvement",
+        tag: input.lastAssignment.tag,
+        text: cleanFactText(completedAssignmentText(input.lastAssignment.body)),
+      });
+    }
 
     // Dedup against this turn's recalled memories and within the batch.
     const { kept, dropped } = dedupeAgainst(cleaned, input.recalledTexts, (f) => f.text);
@@ -298,7 +357,7 @@ export async function persistTurn(
 
     const factItems: StoreItem[] = kept.map((f) => ({
       kind: f.kind,
-      line: encodeFact({ kind: f.kind, text: f.text, at, sessionId: input.sessionId }),
+      line: encodeFact({ kind: f.kind, tag: f.tag, text: f.text, at, sessionId: input.sessionId }),
     }));
 
     const merged = extraction.profileUpdate
@@ -329,6 +388,16 @@ export async function persistTurn(
     summary.failed = facts.failed + profile.failed;
     summary.pending = facts.pending + profile.pending;
     cacheStoredProfile(deps, input.namespaces.profile, profileItems, profile);
+
+    const assignmentIndex = factItems.findIndex((f) => f.kind === "assignment");
+    const improvementDone = factItems.some(
+      (f) => f.kind === "improvement" && f.line.includes(completedAssignmentText("")),
+    );
+    summary.assignmentSaved =
+      assignmentIndex >= 0 &&
+      (facts.stored.some((x) => x.index === assignmentIndex) || facts.pending > 0);
+    summary.assignmentCompleted = completed && improvementDone;
+    cacheAssignment(deps, input.namespaces.facts, factItems, facts, assignmentIndex, completed);
     return summary;
   } catch (error) {
     summary.error = errorCode(error);

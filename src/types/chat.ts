@@ -7,6 +7,11 @@ export interface MemoryChip {
   kind: MemoryKind | "note";
   snippet: string;
   at: string | null;
+  /**
+   * Mistake chips: this mistake's tag was seen in N (≥ 2) earlier sessions
+   * among the notes recalled this turn ("Seen in N sessions").
+   */
+  seenInSessions?: number;
 }
 
 /** `data-memory` part, sent BEFORE the reply text streams. */

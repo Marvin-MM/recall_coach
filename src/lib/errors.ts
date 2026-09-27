@@ -101,6 +101,23 @@ export class MemoryUnavailableError extends MemoryError {
   }
 }
 
+/**
+ * Recall answered, but every match was dropped (blob download / SEAL decrypt
+ * failed on the relayer). Transient in practice: one retry usually succeeds.
+ */
+export class MemoryRecallDroppedError extends MemoryError {
+  readonly dropped: number;
+  constructor(dropped: number) {
+    super(
+      "MEMORY_RECALL_DROPPED",
+      503,
+      `recall dropped all ${dropped} matches (blob download/decrypt failed)`,
+      { expose: false },
+    );
+    this.dropped = dropped;
+  }
+}
+
 /** Delegate key not registered on the account, or account id mismatch. */
 export class MemoryAuthError extends MemoryError {
   constructor(message = "Memory service rejected our credentials.", cause?: unknown) {

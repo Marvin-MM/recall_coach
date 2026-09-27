@@ -11,7 +11,7 @@ import type {
 } from "@mysten-incubation/memwal";
 import { MemWal } from "@mysten-incubation/memwal";
 import { coachLimits } from "@/config/coach";
-import { MemoryTimeoutError, MemoryUnavailableError } from "@/lib/errors";
+import { MemoryRecallDroppedError, MemoryTimeoutError } from "@/lib/errors";
 import { log, logOnce } from "@/lib/log";
 import { withTimeout } from "@/lib/timeout";
 import type { AcceptedMemoryJob, RecalledMemory, RememberOutcome } from "@/types/memory";
@@ -147,9 +147,7 @@ export function createMemWalPort(client: MemWalLike, config: MemWalAdapterConfig
         if (dropped > 0) {
           log.warn("memory.recall_dropped", { dropped, returned: result.results.length });
           if (result.results.length === 0) {
-            throw new MemoryUnavailableError(
-              `recall dropped all ${dropped} matches (blob download/decrypt failed)`,
-            );
+            throw new MemoryRecallDroppedError(dropped);
           }
         }
         return result.results.map(toRecalled);

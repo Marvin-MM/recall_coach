@@ -67,7 +67,7 @@ extract (generateText + Output.object, strict JSON schema)
 - `coaching_sessions` — mode, Amnesia flag, generic title, turn count, `last_activity_at`, timestamps.
 - `session_messages` — encrypted transcripts: role, `seq` (UNIQUE per session), `ciphertext`/`iv`/`auth_tag` (bytea), `key_version`, `status` (`ok`|`failed`). AAD = `${userId}:${sessionId}:${seq}`. Cascades with the session and the user.
 - `memory_events` — one row per memory write: namespace, kind, job id, blob id, status, error code, latency. `CHECK (status <> 'done' OR blob_id IS NOT NULL)`.
-- `recall_events` — recalled blob ids, result count, best distance, latency, degraded flag/reason.
+- `recall_events` — recalled blob ids, result count, best distance, latency, degraded flag/reason, `attempt` (2 = retried once after an all-dropped or unexpectedly empty recall).
 
 No table has a column for memory text, and no message is stored in plaintext. Transcripts are for the user; memories are for the coach.
 
@@ -76,6 +76,8 @@ No table has a column for memory text, and no message is stored in plaintext. Tr
 | Failure | Behaviour |
 |---|---|
 | Relayer unreachable / recall timeout | Reply streams with `degraded: true`, UI notice, `recall_events.degraded = true` |
+| All recall matches dropped (`dropped_count`) / empty despite saved memories | One retry ~400 ms later inside the recall timeout (`attempt: 2`); still failing → degraded |
+| Previous session's saves still pending | Live “still saving” notice in the chat; system prompt says notes may be missing |
 | Circuit breaker open | Recall skipped instantly (degraded) |
 | Delegate key invalid / account mismatch | Degraded; `memory.auth_error` logged once per instance; `/api/health` relayer down |
 | SDK/relayer incompatibility | Degraded; surfaced in `/api/health` |

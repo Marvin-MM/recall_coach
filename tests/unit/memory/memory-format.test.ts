@@ -19,14 +19,42 @@ describe("encode/decode round trip", () => {
       sessionId: SESSION,
     });
     expect(line).toBe(
-      `[kind=mistake][at=2026-09-22T10:14:00.000Z][session=${SESSION}] In a behavioral STAR answer the user skipped the Result.`,
+      `[kind=mistake][tag=other][at=2026-09-22T10:14:00.000Z][session=${SESSION}] In a behavioral STAR answer the user skipped the Result.`,
     );
     expect(decodeMemory(line)).toEqual({
       kind: "mistake",
       at: "2026-09-22T10:14:00.000Z",
       sessionId: SESSION,
+      tag: "other",
       body: "In a behavioral STAR answer the user skipped the Result.",
     });
+  });
+
+  it("writes the tag right after the kind: [kind][tag][at][session]", () => {
+    const line = encodeFact({
+      kind: "assignment",
+      tag: "impact",
+      text: "Coach asked the user to end with the metric.",
+      at: AT,
+      sessionId: SESSION,
+    });
+    expect(line).toBe(
+      `[kind=assignment][tag=impact][at=2026-09-22T10:14:00.000Z][session=${SESSION}] Coach asked the user to end with the metric.`,
+    );
+    expect(decodeMemory(line)).toMatchObject({ kind: "assignment", tag: "impact" });
+  });
+
+  it("writes no tag for untagged kinds (goal, preference, …)", () => {
+    const line = encodeFact({ kind: "goal", tag: "impact", text: "Wants a staff role.", at: AT });
+    expect(line).not.toContain("[tag=");
+    expect(decodeMemory(line)?.tag).toBeUndefined();
+  });
+
+  it("decodes legacy (untagged) and unknown-tag mistake lines as tag other", () => {
+    const legacy = `[kind=mistake][at=2026-09-20T09:00:00.000Z][session=${SESSION}] Rambled.`;
+    expect(decodeMemory(legacy)).toMatchObject({ kind: "mistake", tag: "other", body: "Rambled." });
+    const unknown = `[kind=mistake][tag=vibes][at=2026-09-20T09:00:00.000Z] Rambled.`;
+    expect(decodeMemory(unknown)).toMatchObject({ tag: "other" });
   });
 
   it("omits an invalid session id instead of writing it", () => {

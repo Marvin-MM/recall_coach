@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lt, ne, sql } from "drizzle-orm";
 import { type MemoryKind, type MemoryStatus, memoryEvents } from "../schema";
 import type { Queryable, Tx } from "../types";
 
@@ -51,6 +51,14 @@ export interface MemoryEventsRepo {
   /** A session's memory rows (metadata only), oldest first. */
   listForSession(userId: string, coachingSessionId: string): Promise<SessionMemoryEvent[]>;
   countJobsForSession(userId: string, coachingSessionId: string): Promise<JobCounts>;
+  /**
+   * The newest OTHER session of this user that still has pending memory
+   * saves, with its pending count (null when none). Metadata only.
+   */
+  pendingFromOtherSession(
+    userId: string,
+    currentSessionId: string,
+  ): Promise<{ coachingSessionId: string; pending: number } | null>;
   /** Pending jobs older than `olderThan` (for the cron health log). */
   countStalePending(olderThan: Date): Promise<number>;
   /** Pending jobs to reconcile, oldest first. Scoped to a user (and session) when given. */
@@ -206,6 +214,29 @@ export function createMemoryEventsRepo(db: Queryable): MemoryEventsRepo {
       const counts: JobCounts = { pending: 0, done: 0, failed: 0 };
       for (const row of rows) counts[row.status] = row.count;
       return counts;
+    },
+
+    async pendingFromOtherSession(userId, currentSessionId) {
+      const rows = await db
+        .select({
+          coachingSessionId: memoryEvents.coachingSessionId,
+          pending: sql<number>`count(*)::int`,
+        })
+        .from(memoryEvents)
+        .where(
+          and(
+            eq(memoryEvents.userId, userId),
+            eq(memoryEvents.status, "pending"),
+            ne(memoryEvents.coachingSessionId, currentSessionId),
+          ),
+        )
+        .groupBy(memoryEvents.coachingSessionId)
+        .orderBy(desc(sql`max(${memoryEvents.createdAt})`))
+        .limit(1);
+      const row = rows[0];
+      return row?.coachingSessionId
+        ? { coachingSessionId: row.coachingSessionId, pending: row.pending }
+        : null;
     },
 
     async listPending(filter) {

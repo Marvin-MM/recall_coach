@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   CalendarDays,
+  ClipboardCheck,
   Flag,
   GraduationCap,
   type LucideIcon,
@@ -25,11 +26,13 @@ export const KIND_META: Record<ChipKind, { label: string; icon: LucideIcon }> = 
   improvement: { label: "Improvement", icon: TrendingUp },
   goal: { label: "Goal", icon: Flag },
   preference: { label: "Preference", icon: Sparkles },
+  assignment: { label: "Assignment", icon: ClipboardCheck },
   note: { label: "Note", icon: NotebookPen },
 };
 
 /** Order used by the memory inspector (most coaching-relevant first). */
 export const KIND_ORDER: readonly ChipKind[] = [
+  "assignment",
   "mistake",
   "improvement",
   "strength",

@@ -1,4 +1,6 @@
 import { RUBRIC_DIMENSIONS } from "@/config/coach";
+import type { MistakePattern } from "@/server/memory/patterns";
+import { MEMORY_TAG_DESCRIPTIONS } from "@/server/memory/tags";
 import type { CoachingMode } from "@/types/domain";
 import type { CoachProfile, RecalledMemory } from "@/types/memory";
 
@@ -11,6 +13,12 @@ export interface SystemPromptInput {
   degraded: boolean;
   /** True on the first turn of a session (drives the proactive recap). */
   firstTurn: boolean;
+  /** Latest open assignment (the coach's "Fix next time"), recalled from Walrus Memory. */
+  assignment?: RecalledMemory | null;
+  /** Mistake tags repeated across ≥ 2 earlier sessions (see patterns.ts). */
+  patterns?: readonly MistakePattern[];
+  /** Memory saves from an earlier session still pending (their notes may be missing). */
+  previousSessionPending?: number;
   now: Date;
   userFirstName?: string | null;
 }
@@ -178,10 +186,12 @@ export function buildSystemPrompt(input: SystemPromptInput): string {
     return sections.join("\n\n");
   }
 
-  const seen = new Set<string>();
+  const assignment = input.assignment ?? null;
+  const seen = new Set<string>(assignment?.blobId ? [assignment.blobId] : []);
   const recap = input.recap.filter((m) => !seen.has(m.blobId) && seen.add(m.blobId));
   const facts = input.facts.filter((m) => !seen.has(m.blobId) && seen.add(m.blobId));
-  const empty = !input.profile && recap.length === 0 && facts.length === 0;
+  const patterns = input.patterns ?? [];
+  const empty = !input.profile && !assignment && recap.length === 0 && facts.length === 0;
 
   const block: string[] = [
     "<coach_memory>",
@@ -194,8 +204,16 @@ export function buildSystemPrompt(input: SystemPromptInput): string {
       ...recap.map((m) => memoryLine(m, input.now)),
     );
   }
+  if (assignment) {
+    block.push("LAST ASSIGNMENT (not yet done):", memoryLine(assignment, input.now));
+  }
   if (facts.length > 0) {
     block.push("RELEVANT TO THIS MESSAGE:", ...facts.map((m) => memoryLine(m, input.now)));
+  }
+  for (const p of patterns) {
+    block.push(
+      `Pattern: ${MEMORY_TAG_DESCRIPTIONS[p.tag]} seen in ${p.sessions} of the user's previous sessions.`,
+    );
   }
   if (empty) block.push("(no memories yet)");
   block.push("</coach_memory>");
@@ -208,10 +226,32 @@ export function buildSystemPrompt(input: SystemPromptInput): string {
     '- Notes marked "from setup" come from the user\'s onboarding answers, not from a practice session — never describe them as "last session" or "last time".',
     "- If a past mistake did not recur in this answer, say so explicitly — that is progress.",
   ];
+  if (patterns.length > 0) {
+    policy.push(
+      '- A "Pattern" line counts only the notes shown above, so say "in N sessions I can see", never "every time". Name the pattern once and prefer questions that test it.',
+    );
+  }
+  if ((input.previousSessionPending ?? 0) > 0) {
+    policy.push(
+      "- Some notes from the last session are still being saved and may be missing. Don't claim the last session had no mistakes or progress; if it matters, say you may not see everything from it yet.",
+    );
+  }
+  if (assignment && input.firstTurn) {
+    policy.push(
+      "- This is the first message of a new session: open with ONE sentence naming the LAST ASSIGNMENT (with its date) and ask them to apply it in their first answer, then continue with the mode.",
+      "- When they answer, say explicitly whether they did what the assignment asked.",
+    );
+  } else if (assignment) {
+    policy.push(
+      "- If this answer does what the LAST ASSIGNMENT asked, say so explicitly — that is progress.",
+    );
+  }
   if (empty) {
     policy.push(
       "- You have no notes about this user yet: do not pretend to know them. Briefly ask for their target role, interview date and how they like to learn, then start.",
     );
+  } else if (assignment && input.firstTurn) {
+    // The assignment opening (above) is the recap.
   } else if (input.firstTurn && recap.length > 0) {
     policy.push(
       "- This is the first message of a new session: open with ONE specific sentence recapping where they left off (most recent mistake or progress, with its date) and offer to start there, then continue with the mode.",

@@ -76,6 +76,15 @@ export function MessageMemoryChips({ part }: { part: MemoryDataPart }) {
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <Icon className="size-3.5 shrink-0 text-link" aria-hidden />
                     <span className="font-medium text-foreground">{meta.label}</span>
+                    {chip.seenInSessions && (
+                      <span
+                        className="border border-link/40 px-1 font-mono text-[10px] text-link"
+                        title={`This kind of mistake appears in ${chip.seenInSessions} of the past sessions I can see`}
+                      >
+                        Seen in {chip.seenInSessions} sessions
+                        <span className="sr-only"> I can see</span>
+                      </span>
+                    )}
                     {chip.at && (
                       <span className="font-mono text-[11px]">{formatWhen(chip.at)}</span>
                     )}

@@ -21,6 +21,12 @@ export interface SessionDetailDto extends Omit<SessionDto, "savedMemories"> {
   jobs: { pending: number; done: number; failed: number };
 }
 
+/** GET /api/sessions/[id]/previous-saves — an earlier session's memories still saving. */
+export interface PreviousSavesDto {
+  sessionId: string | null;
+  pending: number;
+}
+
 export interface SessionsListDto {
   sessions: SessionDto[];
 }

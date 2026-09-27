@@ -11,6 +11,8 @@ export interface RecallEventInput {
   latencyMs: number;
   degraded: boolean;
   degradedReason: string | null;
+  /** 1, or 2 when the recall was retried once. */
+  attempt?: 1 | 2;
 }
 
 export interface RecallEventsRepo {

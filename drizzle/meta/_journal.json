@@ -15,6 +15,13 @@
       "when": 1790239047904,
       "tag": "0001_session_history",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790508847329,
+      "tag": "0002_memory_tags_assignments",
+      "breakpoints": true
     }
   ]
 }

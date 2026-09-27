@@ -9,7 +9,12 @@ import { encodeFact, encodeProfile } from "@/server/memory/memory-format";
 import { deriveNamespaces } from "@/server/memory/namespace";
 import { createTranscriptStore } from "@/server/transcripts/transcript-store";
 import type { MemoryDataPart } from "@/types/chat";
-import { allModelInput, createChatHarness, readUiStream } from "../support/chat-harness";
+import {
+  allModelInput,
+  createChatHarness,
+  extractionJson,
+  readUiStream,
+} from "../support/chat-harness";
 import { createTestDb, insertUser, type TestDb } from "../support/pglite";
 import { testKeyring } from "../support/transcripts";
 
@@ -169,13 +174,25 @@ describe("POST /api/chat — memory", () => {
 
   it("4. persistence: 3 extracted facts → 3 rows done with blob ids; a failing job → failed", async () => {
     const facts = [
-      { kind: "mistake", text: "The user gave no metric for the result of the caching project." },
-      { kind: "strength", text: "The user structured the answer clearly with Situation and Task." },
-      { kind: "goal", text: "The user wants to practise system design failure modes next." },
+      {
+        kind: "mistake",
+        tag: "impact",
+        text: "The user gave no metric for the result of the caching project.",
+      },
+      {
+        kind: "strength",
+        tag: "structure",
+        text: "The user structured the answer clearly with Situation and Task.",
+      },
+      {
+        kind: "goal",
+        tag: "other",
+        text: "The user wants to practise system design failure modes next.",
+      },
     ];
     const h = createChatHarness(t.db, {
       user,
-      model: { extractionJson: JSON.stringify({ facts, profileUpdate: null }) },
+      model: { extractionJson: extractionJson(facts) },
     });
     await readUiStream(await h.post(turn("Here is my answer about the caching project…")));
     await h.runAfter();
@@ -192,7 +209,7 @@ describe("POST /api/chat — memory", () => {
     const h2 = createChatHarness(t.db, {
       user,
       memory: { failRememberIndexes: [1] },
-      model: { extractionJson: JSON.stringify({ facts, profileUpdate: null }) },
+      model: { extractionJson: extractionJson(facts) },
     });
     await readUiStream(await h2.post(turn("Another answer about caching")));
     await h2.runAfter();
@@ -207,13 +224,14 @@ describe("POST /api/chat — memory", () => {
     const h = createChatHarness(t.db, {
       user,
       model: {
-        extractionJson: JSON.stringify({
-          facts: [
-            { kind: "preference", text: injected },
-            { kind: "mistake", text: "The user skipped the Result in a STAR answer." },
-          ],
-          profileUpdate: null,
-        }),
+        extractionJson: extractionJson([
+          { kind: "preference", tag: "other", text: injected },
+          {
+            kind: "mistake",
+            tag: "structure",
+            text: "The user skipped the Result in a STAR answer.",
+          },
+        ]),
       },
     });
     await readUiStream(await h.post(turn(injected)));
