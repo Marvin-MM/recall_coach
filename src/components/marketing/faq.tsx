@@ -7,7 +7,6 @@ import {
   HardDrive,
   HelpCircle,
   KeyRound,
-  LifeBuoy,
   type LucideIcon,
   MessageSquareText,
   ScrollText,
@@ -18,6 +17,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useState } from "react";
 import {
   Accordion,
@@ -206,9 +206,15 @@ export function Faq() {
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-3 border border-dashed border-border p-6 text-center sm:flex-row sm:text-left">
-          <span className="flex size-10 shrink-0 items-center justify-center bg-accent">
-            <LifeBuoy className="size-5 text-link" aria-hidden />
-          </span>
+          <div aria-hidden className="relative size-10 shrink-0 overflow-hidden rounded-full">
+            <Image
+              src="/callback-coach.png"
+              alt=""
+              fill
+              className="object-cover"
+              draggable={false}
+            />
+          </div>
           <p className="text-sm text-muted-foreground sm:mr-auto">
             <span className="block font-medium text-foreground">Still curious how it works?</span>
             The privacy page covers exactly what's stored, where, and what never is.

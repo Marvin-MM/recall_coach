@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { siteConfig, stack } from "@/config/site";
@@ -49,7 +50,7 @@ export function SiteFooter() {
 
       {/* CTA band */}
       <div className="mx-auto max-w-6xl px-4 pt-20 pb-16 sm:px-6">
-        <div className="flex flex-col gap-8 border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm sm:p-10 md:flex-row md:items-end md:justify-between">
+        <div className="relative flex flex-col gap-8 overflow-hidden border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm sm:p-10 md:flex-row md:items-end md:justify-between">
           <div className="max-w-xl space-y-3">
             <p className="font-mono text-[11px] tracking-[0.18em] text-link uppercase">
               Start today
@@ -62,10 +63,26 @@ export function SiteFooter() {
             <OpenCoachButton className="h-11 px-5 text-sm">Start practicing</OpenCoachButton>
             <Link
               href="/privacy"
-              className="inline-flex h-11 items-center border border-white/15 px-5 text-sm text-white/80 transition-colors hover:border-white/30 hover:text-white"
+              className="inline-flex h-11 items-center border border-white/55 px-5 text-sm text-white/80 transition-colors hover:border-white/60 hover:text-white"
             >
               How your data is kept
             </Link>
+          </div>
+
+          {/* Mascot — peeking up from the bottom-right corner */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-4 -bottom-6 hidden sm:block"
+          >
+            <Image
+              src="/callback.png"
+              alt=""
+              width={200}
+              height={200}
+              className="h-44 w-auto select-none opacity-90 drop-shadow-[0_-8px_24px_rgb(77_162_255/0.25)]"
+              draggable={false}
+              priority={false}
+            />
           </div>
         </div>
       </div>
