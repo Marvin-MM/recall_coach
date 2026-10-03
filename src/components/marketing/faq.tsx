@@ -206,11 +206,12 @@ export function Faq() {
         </div>
 
         <div className="mt-10 flex flex-col items-center gap-3 border border-dashed border-border p-6 text-center sm:flex-row sm:text-left">
-          <div aria-hidden className="relative size-10 shrink-0 overflow-hidden rounded-full">
+          <div aria-hidden className="relative size-12 shrink-0 overflow-hidden rounded-full">
             <Image
               src="/callback-coach.png"
               alt=""
               fill
+              sizes="50px"
               className="object-cover"
               draggable={false}
             />
