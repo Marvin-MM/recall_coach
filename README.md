@@ -4,10 +4,9 @@ Callback is an interview and skill coach that remembers your target role, your p
 
 > Built for the Walrus Foundation “Chatbots That Remember” hackathon (deadline 9 Oct 2026, 14:00 UTC).
 
-> **Demo GIF:** `TODO(human)` — record a real returning session (memory chips + inspector) and embed it here.
+> **Demo GIF:** ![Demo Description](public/demo.gif)
 
-- **Live demo:** `TODO(human)` — add the Vercel URL after deploying
-- **Article:** `TODO(human)` · **X:** `TODO(human)`
+- **Live demo:** [https://recall-coach-peach.vercel.app/](https://recall-coach-peach.vercel.app/)
 
 ## What memory visibly does
 
