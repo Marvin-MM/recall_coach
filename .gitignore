@@ -60,3 +60,6 @@ next-env.d.ts
 # Private working material — never pushed
 /bug-hunt/
 /docs/article/
+/docs/SUBMISSION_CHECKLIST.md
+/docs/SUBMISSION_FORM.md
+/eval/
