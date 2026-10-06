@@ -1,0 +1,186 @@
+{
+  "date": "2026-09-27T13:58:36.431Z",
+  "model": "qwen/qwen3.8-27b",
+  "latency": [
+    {
+      "effort": "none",
+      "ms": 858,
+      "outputTokens": 50,
+      "reasoningTokens": null,
+      "textChars": 285
+    },
+    {
+      "effort": "default",
+      "ms": 630,
+      "outputTokens": 63,
+      "reasoningTokens": null,
+      "textChars": 367
+    },
+    {
+      "effort": "none",
+      "ms": 445,
+      "outputTokens": 54,
+      "reasoningTokens": null,
+      "textChars": 310
+    },
+    {
+      "effort": "default",
+      "ms": 546,
+      "outputTokens": 56,
+      "reasoningTokens": null,
+      "textChars": 354
+    },
+    {
+      "effort": "none",
+      "ms": 386,
+      "outputTokens": 63,
+      "reasoningTokens": null,
+      "textChars": 335
+    },
+    {
+      "effort": "default",
+      "ms": 618,
+      "outputTokens": 50,
+      "reasoningTokens": null,
+      "textChars": 275
+    }
+  ],
+  "strictOptional": {
+    "accepted": false,
+    "statusCode": 400,
+    "message": "{\"error\":{\"message\":\"invalid JSON schema for response_format: 'response': /required: `required` is required to be supplied and to be an array including every key in properties. The following properties must be listed in `required`: b\",\"type\":\"invalid_request_error\",\"param\":\"response_format\",\"schema_path\":\"/required\",\"schema_path_segments\":[\"$\",\"required\"],\"schema_kind\":\"required\"}}\n"
+  },
+  "tagAdherence": {
+    "source": "eval/results/20260927-1213/session1.json",
+    "runs": [
+      {
+        "persona": "sre-nadia",
+        "run": 1,
+        "ok": true,
+        "facts": [
+          {
+            "kind": "mistake",
+            "tag": "impact"
+          },
+          {
+            "kind": "mistake",
+            "tag": "specificity"
+          },
+          {
+            "kind": "strength",
+            "tag": "structure"
+          }
+        ],
+        "assignmentTag": "impact"
+      },
+      {
+        "persona": "sre-nadia",
+        "run": 2,
+        "ok": true,
+        "facts": [
+          {
+            "kind": "mistake",
+            "tag": "impact"
+          },
+          {
+            "kind": "mistake",
+            "tag": "specificity"
+          },
+          {
+            "kind": "strength",
+            "tag": "structure"
+          }
+        ],
+        "assignmentTag": "impact"
+      },
+      {
+        "persona": "design-tomas",
+        "run": 1,
+        "ok": true,
+        "facts": [
+          {
+            "kind": "mistake",
+            "tag": "communication"
+          },
+          {
+            "kind": "mistake",
+            "tag": "specificity"
+          },
+          {
+            "kind": "mistake",
+            "tag": "structure"
+          },
+          {
+            "kind": "goal",
+            "tag": "other"
+          }
+        ],
+        "assignmentTag": "communication"
+      },
+      {
+        "persona": "design-tomas",
+        "run": 2,
+        "ok": true,
+        "facts": [
+          {
+            "kind": "mistake",
+            "tag": "communication"
+          },
+          {
+            "kind": "mistake",
+            "tag": "structure"
+          },
+          {
+            "kind": "mistake",
+            "tag": "specificity"
+          },
+          {
+            "kind": "goal",
+            "tag": "other"
+          }
+        ],
+        "assignmentTag": "structure"
+      },
+      {
+        "persona": "data-amara",
+        "run": 1,
+        "ok": true,
+        "facts": [
+          {
+            "kind": "strength",
+            "tag": "structure"
+          },
+          {
+            "kind": "mistake",
+            "tag": "specificity"
+          },
+          {
+            "kind": "goal",
+            "tag": "other"
+          }
+        ],
+        "assignmentTag": "specificity"
+      },
+      {
+        "persona": "data-amara",
+        "run": 2,
+        "ok": true,
+        "facts": [
+          {
+            "kind": "strength",
+            "tag": "structure"
+          },
+          {
+            "kind": "mistake",
+            "tag": "specificity"
+          },
+          {
+            "kind": "goal",
+            "tag": "other"
+          }
+        ],
+        "assignmentTag": "specificity"
+      }
+    ]
+  }
+}
